@@ -7,6 +7,8 @@ Este documento mantém duas camadas deliberadas:
 1. **arquitetura ativa**, refletindo o estado verificado mais recente;
 2. **baseline detalhado R0–R2.1 preservado**, para que a evolução arquitetural não apague invariantes, limitações e justificativas anteriores.
 
+O snapshot canônico R2.1 exato também é preservado em `docs/history/R2_1/ARCHITECTURE.md`.
+
 Histórico experimental e decisões ficam em `RESEARCH_LEDGER.md`; evidências e fingerprints em `VERIFICATION.md`; roadmap/governança em `PROJECT.md`.
 
 ---
@@ -264,13 +266,9 @@ O gate deve manter shader, input, output oracle, binding baseline e element coun
 
 # APÊNDICE A — BASELINE DETALHADO R0–R2.1 PRESERVADO
 
-> Este apêndice preserva o conteúdo arquitetural detalhado do último snapshot íntegro anterior a R3. Afirmações de “futuro” contidas nele são históricas e foram supersedidas pelas seções ativas acima quando R3–R5E produziram evidência.
+> Este apêndice resume os invariantes do baseline anterior. A versão canônica exata, byte-for-byte, está em `docs/history/R2_1/ARCHITECTURE.md`.
 
-## A.1 Escopo do baseline
-
-Este baseline descrevia somente a arquitetura sustentada até R2.1 e separava hipóteses futuras.
-
-## A.2 Estado arquitetural no fechamento R2.1
+## A.1 Estado arquitetural no fechamento R2.1
 
 | Área | Estado naquele snapshot |
 |---|---|
@@ -286,275 +284,18 @@ Este baseline descrevia somente a arquitetura sustentada até R2.1 e separava hi
 | Physics production | `NOT IMPLEMENTED` |
 | FOUNDATIONAL contracts | `NONE` |
 
-## A.3 Arquitetura R0–R2.1
+## A.2 World / hash / journal
 
-```text
-                            ┌─────────────────────────────┐
-                            │ AUTHORITATIVE WORLD STATE   │
-                            │ identity / state / tx cursor│
-                            └──────────────┬──────────────┘
-                                           │ immutable pre-wave view
-                                           ▼
-                            ┌─────────────────────────────┐
-                            │ EXECUTION KERNEL            │
-                            │ declared read/write sets    │
-                            │ explicit dependencies       │
-                            │ deterministic DAG / waves   │
-                            └──────────────┬──────────────┘
-                                           │
-                          ┌────────────────┼────────────────┐
-                          ▼                ▼                ▼
-                    System A         System B         System N
-                    private work     private work     private work
-                          │                │                │
-                          └────────────────┼────────────────┘
-                                           ▼
-                            ┌─────────────────────────────┐
-                            │ PRIVATE PATCH OUTPUTS       │
-                            │ scalar + typed ranges       │
-                            └──────────────┬──────────────┘
-                                           │ stable SystemId ordering
-                                           ▼
-                            ┌─────────────────────────────┐
-                            │ HYBRID TRANSACTION          │
-                            │ one TransactionId           │
-                            │ full validation             │
-                            └──────────────┬──────────────┘
-                                           │
-                                           ▼
-                            ┌─────────────────────────────┐
-                            │ PATCH JOURNAL / COMMIT      │
-                            │ forward history             │
-                            │ ephemeral undo              │
-                            └──────────────┬──────────────┘
-                                           │
-                                           ▼
-                            ┌─────────────────────────────┐
-                            │ NEW AUTHORITATIVE WORLD     │
-                            └──────────────┬──────────────┘
-                                           │
-                                           ▼
-                            ┌─────────────────────────────┐
-                            │ CANONICAL SHA-256           │
-                            └─────────────────────────────┘
-```
+O baseline preserva identity allocation dentro de `CreateEntity`, monotonic TransactionId, full validation before publication, non-finite rejection, canonical little-endian SHA-256 e divergence-guarded rollback.
 
-## A.4 World Kernel — contratos verificados
+## A.3 Execution / hybrid patches
 
-### A.4.1 World state é autoridade
+Declared reads/writes/after, deterministic Kahn waves, immutable pre-wave World, private patches e one authoritative transaction/wave. R2.1 adiciona scalar + Vec3/U32 ranges sob mesmo TransactionId e rejeita overlap ambíguo.
 
-O `World` de referência mantém o estado que os testes consideram autoritativo.
+## A.4 Determinismo — escopo
 
-Renderer, física e neural representations não faziam parte do núcleo e não eram necessários para reconstruir o estado testado.
+Observado em x86-64 Linux nos workloads registrados, GCC/Clang, múltiplos worker counts e oracle vs optimized paths. Não equivale a determinismo universal Windows/Linux/ARM/GPU.
 
-### A.4.2 Identidade
+## A.5 Hipóteses que foram posteriormente executadas
 
-Propriedades testadas:
-
-- Entity ID `0` reservado para mutações de escopo do mundo;
-- IDs criados sequencialmente;
-- identidade não depende de endereço de memória;
-- criação de identidade ocorre dentro de `CreateEntity`;
-- não existe reserva externa que avance secretamente o cursor de IDs;
-- `next_entity_id()` é leitura no modelo corrigido.
-
-### A.4.3 Transaction ID
-
-Transaction IDs são monotônicos no modelo de referência. Uma transação com ID inválido é rejeitada.
-
-### A.4.4 Atomicidade de validação
-
-A transação inteira é validada antes de a alteração autoritativa ser publicada. Uma operação inválida após operações válidas não produz commit parcial.
-
-### A.4.5 Estado numérico
-
-Valores vetoriais não finitos (`NaN`/`Infinity`) são rejeitados. `AdvanceReference` exige `dt` finito e não negativo.
-
-## A.5 Canonical State Hash
-
-O hash de referência é SHA-256 sobre serialização canônica little-endian contendo:
-
-- schema version;
-- next entity ID;
-- last transaction ID;
-- living entity count;
-- IDs alocados em ordem;
-- alive flag;
-- health;
-- bits IEEE-754 brutos de position e velocity.
-
-Consequência deliberada:
-
-```text
-+0.0 != -0.0
-```
-
-para o hash, pois os bit patterns diferem. O hash detecta estado exato, não equivalência perceptual.
-
-Limitação: o hash R1 percorre estado completo; incremental/Merkle permanece aberto.
-
-## A.6 Journal e rollback
-
-O journal persistente armazena forward transactions. Isso permite representar integração como `AdvanceReference(dt)` em vez de persistir todas as posições resultantes.
-
-Rollback exato usa pre-state efêmero separado do formato forward persistente.
-
-Antes de rollback, o journal compara o hash esperado com o World atual. Estado divergente fora da história controlada é rejeitado.
-
-Limitações registradas:
-
-- crash-safe record recovery;
-- checksums por record;
-- rollback storage comprimido/bounded;
-- hashing incremental.
-
-## A.7 Execution Kernel detalhado
-
-Cada sistema possui stable `SystemId`, read set, write set, optional `after` e função.
-
-Recursos iniciais:
-
-- Identity;
-- EntityState;
-- Position;
-- Velocity;
-- Health.
-
-Regras:
-
-```text
-READ X  + READ X  → no hazard
-READ X  + WRITE X → serialize
-WRITE X + READ X  → serialize
-WRITE X + WRITE X → serialize
-```
-
-Write permission não implica read permission. Acesso não declarado rejeita o sistema antes do commit da wave.
-
-Kahn topological ordering forma waves determinísticas; systems da mesma wave observam o mesmo pre-wave World.
-
-Workers não têm autoridade. Eles produzem private patches; somente depois de completion, canonical ordering, merge e validation ocorre publicação no World.
-
-A primeira implementação criava worker pool por `execute()`. O benchmark revelou contaminação por lifecycle; `ExecutionRuntime` persistente passou a ser o path de benchmark.
-
-## A.8 Hybrid Transaction — R2.1
-
-R2 mostrou que `Mutation` por entity podia dominar materialization/merge/commit em dense updates.
-
-```text
-PatchTransaction
-├── scalar_mutations
-├── vec3_patches
-└── u32_patches
-```
-
-Uso:
-
-- scalar: create/destroy, structure, scattered sparse writes;
-- Vec3 ranges: Position/Velocity contiguous;
-- U32 ranges: Health contiguous.
-
-Scalar e range pertencem ao mesmo `TransactionId` e são publicados atomicamente.
-
-Se scalar e range tentam escrever ambiguamente o mesmo componente/entidade, a transaction é rejeitada. Não existe silent precedence.
-
-Fixed page 256 foi falsificado como representação universal e não faz parte da semântica do World.
-
-`execute_patched()` preserva scheduling semantics:
-
-```text
-DAG execution
-→ private scalar/range outputs
-→ stable SystemId merge
-→ one hybrid PatchTransaction per wave
-→ validate
-→ publish
-```
-
-## A.9 Determinismo — escopo do baseline
-
-Comprovado naquele escopo:
-
-- replay exact-state em x86-64 Linux;
-- GCC 14.2 e Clang 17 com hashes idênticos nos cenários registrados;
-- worker counts diferentes com hash idêntico em R2;
-- serial oracle e R2.1 com hash idêntico nos workloads registrados.
-
-Não comprovado naquele snapshot:
-
-- Windows ↔ Linux;
-- x86-64 ↔ ARM;
-- diferentes FPU modes;
-- CPU ↔ GPU;
-- todos os sistemas futuros;
-- rede distribuída.
-
-Nenhum documento deve chamar esses resultados de determinismo universal.
-
-## A.10 Hipóteses futuras registradas naquele snapshot
-
-### Spatial Kernel
-
-```text
-World spatial data
-    ↓
-SpatialBackend contract
-    ├── flat grid
-    ├── hash grid
-    ├── BVH
-    ├── sparse brick hierarchy
-    └── octree
-```
-
-Essa hipótese foi posteriormente executada em R3 e supersedida pelas seções ativas deste documento.
-
-### Geometry Kernel
-
-```text
-World Object / Region
-    ↓
-GeometryProvider
-    ├── Triangle
-    ├── SDF
-    ├── Voxel
-    ├── Gaussian/Splat
-    └── future provider
-```
-
-Posteriormente parcialmente demonstrado em R4 com múltiplas representações concretas sob contrato comum.
-
-### GPU Laboratory
-
-```text
-Execution Graph
-    ├── CPU workers
-    ├── GPU compute
-    └── future accelerators
-```
-
-Posteriormente iniciado em hardware real no R5E.
-
-### Heterogeneous World
-
-```text
-Authoritative object/region
-    ├── Render representation A
-    ├── Physics representation B
-    ├── destruction representation C
-    └── distant representation D
-```
-
-Continua não fechado de ponta a ponta e permanece alvo de R6.
-
-## A.11 Candidatos a contrato preservados
-
-Itens que sobreviveram ao baseline R2.1 e continuam candidatos, sem status `FOUNDATIONAL`:
-
-1. World state é autoridade; derived views não devem ser autoridade.
-2. Identidade não depende de memória/renderer/scene graph.
-3. Mudança autoritativa cruza fronteira validada.
-4. Optimized path deve ser comparável a oracle/reference.
-5. Workers calculam propostas; publicação autoritativa é separada.
-6. Declared access deve ser machine-checkable.
-7. Granularidade de patch é adaptativa e não semântica.
-8. Overlap ambíguo não deve ser resolvido por precedência silenciosa.
+R3 Spatial, R4 Geometry e R5 GPU/device eram futuras no snapshot R2.1 e hoje são descritas pelas seções ativas acima. R6 Heterogeneous World continua não fechado de ponta a ponta.
