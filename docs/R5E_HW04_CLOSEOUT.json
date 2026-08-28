@@ -1,0 +1,48 @@
+{
+  "schema": "dsf.r5e.hw04.closeout.v1",
+  "status": "VERIFIED_HARDWARE_RESULT",
+  "evidence_sha256": "da327a30d50ebfcc90431d06cd14be585efb0d6b29cb16dadbe308a3eb1faa31",
+  "integrity": {"internal_files_verified": 22, "internal_hash_mismatches": 0},
+  "tool_exit_codes": {"shader_compile": 0, "compile": 0, "link": 0, "probe": 0},
+  "duration_seconds": 3.408,
+  "hardware_result": {
+    "device_name": "NVIDIA GeForce RTX 3070 Ti",
+    "vendor_id": 4318,
+    "device_id": 9346,
+    "api_version": "1.4.341",
+    "queue_family_index": 2,
+    "launch_mode": "Indirect",
+    "binding_model": "descriptor_set_baseline",
+    "operation": "out[i] = in[i] * 3u + 7u",
+    "elements": 1048576,
+    "local_size_x": 256,
+    "workgroup_count_x": 4096,
+    "control_source": "resident_device_buffer",
+    "indirect_command_bytes": 12,
+    "indirect_command": {"x":4096,"y":1,"z":1},
+    "indirect_command_fnv1a64": "0x3891ae3c62606753",
+    "input_fnv1a64": "0xac41f8629b52fce0",
+    "expected_fnv1a64": "0x8e2eef1faffc414f",
+    "output_fnv1a64": "0x8e2eef1faffc414f",
+    "cpu_oracle_match": true,
+    "synchronization2_enabled": true,
+    "validation_errors": 0,
+    "validation_warnings": 0
+  },
+  "functional_equivalence": {
+    "compared_to": "R5E-HW03 Direct compute",
+    "same_operation": true,
+    "same_elements": true,
+    "same_expected_fnv1a64": "0x8e2eef1faffc414f",
+    "same_output_fnv1a64": true,
+    "performance_equivalence_claimed": false
+  },
+  "non_claims": [
+    "no GPU performance characterization",
+    "no GPU timestamp measurement",
+    "no DGC execution",
+    "descriptor-set binding is a baseline oracle, not the final binding architecture",
+    "no descriptor-heap execution",
+    "no eviction characterization"
+  ]
+}

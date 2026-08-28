@@ -1,189 +1,97 @@
-# D-SF — Engine Research Laboratory
+# D-SF — Experimental World / Geometry / Device Architecture
 
-> **Estado do repositório:** baseline auditável R0–R2.1.  
-> **Próxima pesquisa autorizada:** R3 — Spatial Kernel Bake-Off.  
-> **Contratos `FOUNDATIONAL`:** nenhum.
+D-SF is an experimental engine research program built around a strict rule: **authoritative world state is not visual geometry**. Representations, spatial structures, physics views and device work are derived from authoritative semantic/spatial state.
 
-D-SF é um programa de pesquisa de engenharia para descobrir, por experimentos reproduzíveis, uma arquitetura de motor capaz de maximizar complexidade de mundo e qualidade perceptual por unidade de computação sem tornar o estado autoritativo dependente de uma única representação geométrica, renderer ou classe de processador.
+The project is developed experimentally. A mechanism is promoted only after a reference/oracle, controlled experiment and recorded evidence support it.
 
-Este repositório é a **fonte oficial única do projeto**. O código R0–R2.1 e os documentos canônicos abaixo foram consolidados a partir exclusivamente do histórico desta conversa e dos artefatos de laboratório produzidos nela. Nenhum outro repositório foi usado como fonte de verdade para este baseline.
+## Evidence classes
 
-## Fontes canônicas
+- **REFERENCE RESULT** — validated CPU/reference semantics or measurements in the research environment.
+- **HARDWARE RESULT** — executed and measured/verified on real target hardware.
+- **PARTIAL** — useful evidence with an explicit unresolved scope.
+- **FALSIFIED** — tested path that failed its hypothesis and is retained as evidence.
+- **NOT MEASURED** — no claim is permitted.
 
-Para evitar documentos concorrentes, somente estes arquivos definem o estado do projeto:
+## Verified research state
 
-| Documento | Autoridade |
-|---|---|
-| [`README.md`](README.md) | Entrada, arquitetura resumida, estágio ativo e comandos básicos. |
-| [`docs/PROJECT.md`](docs/PROJECT.md) | Intenção original, missão, escopo, regras, roadmap, critérios de promoção e fechamento. |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitetura ativa, contratos verificados, invariantes e fronteiras entre núcleos. |
-| [`docs/RESEARCH_LEDGER.md`](docs/RESEARCH_LEDGER.md) | Registro cronológico completo das hipóteses, experimentos, correções, decisões e motivos. |
-| [`docs/VERIFICATION.md`](docs/VERIFICATION.md) | Evidências reproduzíveis, hashes, benchmarks, ambiente, sanitizers e limitações. |
+| Stage | Status | Scope |
+|---|---|---|
+| R0 | VERIFIED | Authoritative world reference |
+| R1 | VERIFIED | Journal / hash / replay / rollback reference |
+| R2 | VERIFIED | Dependency execution graph correctness; performance partial |
+| R2.1 | VERIFIED | Hybrid scalar/range transaction patches |
+| R3 / R3.1 / R3.2 | VERIFIED | Shared spatial snapshot, cost-aware fabric, budgeted maintenance — CPU/reference |
+| R4A–R4F | VERIFIED | Heterogeneous geometry contract, Sparse SDF, clustered triangles, selection, telemetry and safe exploration — CPU/reference |
+| R5A | VERIFIED | Device residency contract — reference backend |
+| R5B | VERIFIED | Geometry device packages + atomic residency — reference backend |
+| R5C | VERIFIED | Device work contract/planner — CPU/reference |
+| R5D | VERIFIED | Backend capability + translation model — CPU/reference |
+| R5E-HW01 | VERIFIED | Real GPU/Vulkan capability fingerprint |
+| R5E-HW02 | VERIFIED | Real `VkDevice` + device memory roundtrip |
+| R5E-HW03 | VERIFIED | Real Direct compute vs exact CPU oracle |
+| R5E-HW04 | VERIFIED | Real Indirect compute vs exact CPU oracle |
 
-Relatórios antigos separados de R0/R1/R2/R2.1 não são mantidos como documentos ativos porque duplicariam verdades. Seu conteúdo comprovado foi incorporado ao ledger e ao documento de verificação.
+**No stage is labeled foundational.** Contracts remain subject to stronger evidence.
 
-## Regra de evidência
-
-Nenhuma afirmação entra como fato arquitetural somente porque parece plausível. O projeto distingue explicitamente:
-
-- `IDEA`: possibilidade ainda não formulada como teste;
-- `HYPOTHESIS`: proposição falsificável e ainda não comprovada;
-- `EXPERIMENTAL`: existe implementação de laboratório, ainda livre para mudar;
-- `VERIFIED`: passou pelos testes definidos, no escopo explicitamente declarado;
-- `FOUNDATIONAL`: contrato versionado que sobreviveu a validação multiplataforma e estresse arquitetural suficiente para ser tratado como fundação estável.
-
-`VERIFIED` nunca significa “universalmente verdadeiro”. Nenhum contrato chegou a `FOUNDATIONAL` até este baseline.
-
-## Arquitetura atual
-
-O diagrama diferencia a parte já demonstrada em R0–R2.1 das próximas camadas de pesquisa.
-
-```mermaid
-flowchart TD
-    subgraph V[VERIFICADO NO ESCOPO DE REFERÊNCIA — R0 a R2.1]
-        W0[Authoritative World State]
-        S[Immutable pre-wave view]
-        DAG[Execution Kernel\nread/write dependency DAG]
-        SYS[Parallel systems\nprivate computation]
-        PATCH[Private patches\nscalar + typed ranges]
-        MERGE[Canonical merge\nSystemId order]
-        TX[Hybrid Transaction\none TransactionId]
-        VALIDATE[Full validation\nno silent precedence]
-        JOURNAL[PatchJournal\nforward history + ephemeral undo]
-        W1[New Authoritative World State]
-        HASH[Canonical SHA-256]
-
-        W0 --> S --> DAG --> SYS --> PATCH --> MERGE --> TX --> VALIDATE --> JOURNAL --> W1
-        W1 --> HASH
-        JOURNAL -->|replay / rollback| W0
-    end
-
-    subgraph N[PRÓXIMAS HIPÓTESES — NÃO PROMOVIDAS]
-        SPACE[R3 Spatial Kernel\ngrid / hash grid / BVH / sparse hierarchy / octree]
-        GEOM[R4 Geometry Kernel\nmesh / SDF / voxel / splat / future neural providers]
-        GPU[R5 GPU Laboratory\ncompute / residency / indirect execution / GPU patches]
-        HET[R6 Heterogeneous World\nadaptive representation + derived views]
-        RENDER[Derived Render View]
-        PHYS[Derived Physics View]
-    end
-
-    W1 -. authoritative spatial data .-> SPACE
-    SPACE -. provider selection .-> GEOM
-    DAG -. future placement .-> GPU
-    GEOM -. integrated world .-> HET
-    HET -. derived only .-> RENDER
-    HET -. derived only .-> PHYS
-```
-
-### Regra central
-
-**A representação visual não é a verdade do mundo.** O estado autoritativo deve continuar válido mesmo que renderer, geometria visual, física ou backend de execução sejam substituídos.
-
-### Fronteira de autoridade atual
+## Architecture
 
 ```text
 Authoritative World
-       │
-       ▼ immutable snapshot
-Execution DAG
-       │
-       ▼ parallel computation
-Private system patches
-       │
-       ├── scalar writes: estrutura e mudanças esparsas
-       └── typed ranges: mudanças agrupadas ou densas
-       │
-       ▼
-Hybrid Transaction
-       │
-       ▼ validate + canonical publish
-New Authoritative World
+    |
+    +--> Hybrid Transactions / Change Journal
+    |
+    +--> Shared Spatial Snapshot
+    |      +--> Wide BVH8
+    |      +--> Morton BVH8
+    |      +--> cost-aware / budgeted maintenance
+    |
+    +--> GeometrySet
+    |      +--> Triangle / Clustered Triangle
+    |      +--> Analytic SDF / Sparse SDF
+    |      +--> capability + revision + error-budget selection
+    |
+    +--> Device Geometry Packages
+           |
+           +--> Residency contract
+           +--> DeviceWorkPacket DAG
+           +--> backend-neutral translation
+                    |
+                    +--> Vulkan hardware bring-up (R5E)
 ```
 
-Workers podem calcular propostas em paralelo. **Workers não possuem autoridade para mutar o `World` diretamente.**
-
-## Estado das etapas
-
-| Etapa | Estado | Resultado principal |
-|---|---|---|
-| R0 — Minimal Authoritative World | `VERIFIED` — reference scope | Estado autoritativo mínimo, identidade estável, transações validadas e baseline CPU. |
-| R1 — Journal / Hash / Replay / Rollback | `VERIFIED` — same-architecture reference scope | Um `World` novo reproduz o mesmo SHA-256 apenas com o journal ordenado; rollback retorna a hashes históricos exatos. |
-| R2 — Dependency Execution Graph | `VERIFIED` — correctness scope; performance `PARTIAL` | Dependências `read/write` geram waves seguras; serial e worker pool convergem ao mesmo hash. |
-| R2.1 — Hybrid Transaction Patches | `VERIFIED` — correctness + tested-performance scope | Scalar + ranges preservam a autoridade e eliminam grande parte do overhead de milhões de `Mutation` em workloads densos. |
-| R3 — Spatial Kernel Bake-Off | `HYPOTHESIS / NEXT` | Comparar estruturas espaciais sob a mesma API e workloads, sem escolher vencedora antecipadamente. |
-
-## Resultado integrado mais forte até agora
-
-No workload R2.1 de **1.000.000 de entidades, 4 sistemas, 2 waves e 3 frames**, todos os candidatos produziram o mesmo estado final. A mediana observada no ambiente compartilhado da sandbox foi:
-
-| Caminho | Mediana | Speedup vs R2 scalar serial |
-|---|---:|---:|
-| R2 scalar serial | 740.970 ms | 1.000× |
-| R2 scalar / 4 workers | 517.654 ms | 1.431× |
-| R2.1 ranges serial | 228.456 ms | 3.243× |
-| R2.1 ranges / 4 workers | 166.262 ms | 4.457× |
-| R2.1 ranges / 4 workers + persistent parallel commit | 150.455 ms | 4.925× |
-
-SHA-256 final do cenário:
+Core separation:
 
 ```text
-61d624a0af70729626dafebd3b3bea4cb5a074e625ec7f17ac981f6eef5a2c60
+World != Geometry != Device Package != Device Work != Backend Command Model
 ```
 
-Esses valores são **evidência do workload nomeado**, não uma afirmação de desempenho de jogo completo e não são evidência de GPU.
+## Current hardware result
 
-## Build de referência
+On the tested NVIDIA GeForce RTX 3070 Ti / Vulkan 1.4.341 configuration:
 
-Requisitos já usados no laboratório:
+- HW03 Direct compute produced `0x8e2eef1faffc414f` for 1,048,576 `uint32` outputs.
+- HW04 `vkCmdDispatchIndirect` used a resident 12-byte `{4096,1,1}` control buffer and produced the **same exact output hash**.
+- Both gates matched the independent CPU oracle for every element and completed with **0 validation errors / 0 validation warnings**.
 
-- CMake 3.31.x no ambiente registrado;
-- GCC 14.2 e Clang 17;
-- C++23;
-- Linux x86-64 para as verificações atuais.
+This establishes functional equivalence for that workload. It does **not** establish Direct/Indirect performance equivalence or superiority. GPU timestamp characterization is next.
 
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-ctest --test-dir build --output-on-failure
-```
+See:
 
-Executáveis de laboratório atuais:
+- `docs/RESEARCH_STATUS_R3_R5E.md`
+- `docs/R5E_HARDWARE_BRINGUP.md`
+- `docs/R5E_HW04_CLOSEOUT.md`
+- `docs/R5E_CURRENT_STATE.json`
 
-```bash
-./build/aion_lab
-./build/aion_bench 1000000 120
-./build/aion_r1_bench 256 5000
-./build/aion_r2_tests
-./build/aion_r2_bench
-./build/aion_r21_tests
-./build/aion_r21_execution_tests
-./build/aion_r21_bench
-./build/aion_r21_sparse_bench
-./build/aion_r21_execution_bench
-```
+## Build — repository snapshot
 
-O namespace/binários ainda usam o nome interno `aion`, herdado dos artefatos experimentais R0–R2.1. Isso **não é** um contrato arquitetural nem uma decisão definitiva de naming; o baseline preserva o código testado para não introduzir mudança cosmética dentro de uma importação de evidência.
+The repository is a **research record**. Experimental implementation evolves locally and is promoted to GitHub at verified milestones rather than continuously. The tracked portable tree therefore must not be interpreted as the authority for unverified work.
 
-## Limites atuais
+## Research rules
 
-Ainda não foi comprovado:
-
-- determinismo bit a bit Windows ↔ Linux;
-- x86-64 ↔ ARM;
-- execução autoritativa CPU ↔ GPU;
-- desempenho real em Vulkan/DX12/GPU;
-- política final de floating-point determinism;
-- hashing incremental/Merkle em escala;
-- rollback comprimido/bounded em escala;
-- crash-safe journal recovery;
-- estrutura espacial vencedora;
-- Geometry Kernel heterogêneo;
-- renderer ou physics view de produção.
-
-A sandbox utilizada até R2.1 não expôs uma GPU de produção/Vulkan adequada para medições reais. Números de GPU não serão inferidos ou fabricados.
-
-## Próximo gate
-
-R3 só pode promover uma estrutura espacial depois de comparar candidatos sob a mesma interface, conjunto de workloads e critérios de correção. Nenhuma preferência por octree, BVH, grid, sparse bricks ou combinação será tratada como resultado antes dos testes.
-
-Leia [`docs/PROJECT.md`](docs/PROJECT.md) antes de qualquer alteração arquitetural e registre qualquer nova decisão comprovada em [`docs/RESEARCH_LEDGER.md`](docs/RESEARCH_LEDGER.md).
+1. Theory / hypothesis → oracle → controlled experiment → data → conclusion → specification.
+2. AI may propose; the kernel validates.
+3. Visual geometry and physical geometry are derived views, not world truth.
+4. No GPU performance claim is inferred from CPU/reference behavior.
+5. A newer API or technique is never selected merely because it is newer.
+6. Failed hypotheses are evidence, not erased history.
+7. Performance claims are workload- and hardware-specific.
