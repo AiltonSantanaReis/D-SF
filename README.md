@@ -480,6 +480,26 @@ README.md                   # summarized active state
 
 Raw evidence does not need to be dumped indiscriminately into the repository. The repository must preserve enough hashes, fingerprints, environment identity and conclusions to audit the promoted result while avoiding unnecessary binary/log noise.
 
+### Immutable historical baselines
+
+When a canonical document is significantly restructured, its prior verified version must not disappear. Exact historical snapshots are preserved under:
+
+```text
+docs/history/<milestone>/
+```
+
+The R2.1 canonical snapshot is preserved byte-for-byte in:
+
+```text
+docs/history/R2_1/README.md
+docs/history/R2_1/PROJECT.md
+docs/history/R2_1/ARCHITECTURE.md
+docs/history/R2_1/RESEARCH_LEDGER.md
+docs/history/R2_1/VERIFICATION.md
+```
+
+This rule exists specifically to prevent a future documentation update from silently replacing detailed audit history with a summary.
+
 ---
 
 ## 12. Regression Before Promotion
@@ -594,6 +614,9 @@ docs/RESEARCH_LEDGER.md
 
 docs/VERIFICATION.md
     fingerprints, environments and verification index
+
+docs/history/R2_1/
+    immutable byte-for-byte copy of the R2.1 canonical documentation
 
 docs/R5E_CURRENT_STATE.json
     machine-readable active R5E state
