@@ -24,24 +24,36 @@
   },
   "hw03": {
     "launch_mode": "Direct",
+    "binding_model": "descriptor_set_baseline",
     "elements": 1048576,
+    "local_size_x": 256,
     "workgroup_count_x": 4096,
+    "operation": "out[i] = in[i] * 3u + 7u",
     "cpu_oracle_match": true,
+    "expected_fnv1a64": "0x8e2eef1faffc414f",
     "output_fnv1a64": "0x8e2eef1faffc414f",
     "validation_errors": 0,
     "validation_warnings": 0
   },
+  "latest_evidence_sha256": "da327a30d50ebfcc90431d06cd14be585efb0d6b29cb16dadbe308a3eb1faa31",
   "hw04": {
     "launch_mode": "Indirect",
+    "binding_model": "descriptor_set_baseline",
+    "elements": 1048576,
+    "local_size_x": 256,
+    "workgroup_count_x": 4096,
     "control_source": "resident_device_buffer",
     "indirect_command_bytes": 12,
-    "indirect_command": {"x":4096,"y":1,"z":1},
-    "elements": 1048576,
-    "workgroup_count_x": 4096,
+    "indirect_command": {
+      "x": 4096,
+      "y": 1,
+      "z": 1
+    },
+    "operation": "out[i] = in[i] * 3u + 7u",
     "cpu_oracle_match": true,
+    "expected_fnv1a64": "0x8e2eef1faffc414f",
     "output_fnv1a64": "0x8e2eef1faffc414f",
     "validation_errors": 0,
     "validation_warnings": 0
-  },
-  "latest_evidence_sha256": "da327a30d50ebfcc90431d06cd14be585efb0d6b29cb16dadbe308a3eb1faa31"
+  }
 }
