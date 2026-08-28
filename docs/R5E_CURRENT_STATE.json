@@ -55,5 +55,9 @@
     "output_fnv1a64": "0x8e2eef1faffc414f",
     "validation_errors": 0,
     "validation_warnings": 0
+  },
+  "documentation": {
+    "canonical_history_policy": "active_docs_plus_immutable_milestone_snapshots",
+    "r2_1_history_path": "docs/history/R2_1"
   }
 }
