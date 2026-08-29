@@ -39,67 +39,75 @@ jobs:
           }
           def h(b): return hashlib.sha1(b).hexdigest()
           def read(name): return Path('.sync', name).read_bytes()
-          def find_insert(base, target):
+
+          def find_substitute(base, target, label):
+              assert len(base) == 8000
+              if h(base) == target:
+                  print(f'{label}: already exact')
+                  return base
+              a = bytearray(base)
+              for i, old in enumerate(base):
+                  for c in alphabet:
+                      if c == old:
+                          continue
+                      a[i] = c
+                      if h(a) == target:
+                          print(f'{label}: substitution repair pos={i} {chr(old)}->{chr(c)}')
+                          return bytes(a)
+                  a[i] = old
+              raise SystemExit(f'{label}: not repairable as one substitution; sha1={h(base)}')
+
+          def find_insert(base, target, label):
               assert len(base) == 7999
               for i in range(8000):
                   pre, post = base[:i], base[i:]
                   for c in alphabet:
                       cand = pre + bytes([c]) + post
                       if h(cand) == target:
-                          print(f'insertion repair found: pos={i} char={chr(c)}')
+                          print(f'{label}: insertion repair pos={i} char={chr(c)}')
                           return cand
-              raise SystemExit('unable to repair one-character deletion')
-          def find_substitute(base, target):
-              assert len(base) == 8000
-              if h(base) == target: return base
-              a = bytearray(base)
-              for i, old in enumerate(base):
-                  for c in alphabet:
-                      if c == old: continue
-                      a[i] = c
-                      if h(a) == target:
-                          print(f'substitution repair found: pos={i} {chr(old)}->{chr(c)}')
-                          return bytes(a)
-                  a[i] = old
-              raise SystemExit('unable to repair one-character substitution')
+              raise SystemExit(f'{label}: not repairable as one deletion')
 
-          p12a = read('part-12a.b64')
-          if len(p12a) != 8000 or h(p12a) != expected['12a']:
-              raise SystemExit(f'part-12a mismatch len={len(p12a)} sha1={h(p12a)}')
           p12 = read('part-12.b64')
           if len(p12) != 16000:
               raise SystemExit(f'part-12 unexpected length {len(p12)}')
-          p12b = find_substitute(p12[8000:], expected['12b'])
+          p12a = find_substitute(p12[:8000], expected['12a'], 'part-12a')
+          p12b = find_substitute(p12[8000:], expected['12b'], 'part-12b')
           Path('/tmp/part-12a.b64').write_bytes(p12a)
           Path('/tmp/part-12b.b64').write_bytes(p12b)
 
           p13 = read('part-13.b64')
           if len(p13) == 16000 and h(p13[:8000]) == expected['13a'] and h(p13[8000:]) == expected['13b']:
               p13a, p13b = p13[:8000], p13[8000:]
+              print('part-13: already exact')
           elif len(p13) == 15999:
               if h(p13[:8000]) == expected['13a']:
                   p13a = p13[:8000]
-                  p13b = find_insert(p13[8000:], expected['13b'])
+                  p13b = find_insert(p13[8000:], expected['13b'], 'part-13b')
               elif h(p13[7999:]) == expected['13b']:
-                  p13a = find_insert(p13[:7999], expected['13a'])
+                  p13a = find_insert(p13[:7999], expected['13a'], 'part-13a')
                   p13b = p13[7999:]
               else:
-                  # Boundary-agnostic fallback: find the insertion against both half digests.
                   repaired = None
                   for i in range(16000):
                       for c in alphabet:
                           cand = p13[:i] + bytes([c]) + p13[i:]
                           if h(cand[:8000]) == expected['13a'] and h(cand[8000:]) == expected['13b']:
                               repaired = cand
-                              print(f'full part-13 insertion repair found: pos={i} char={chr(c)}')
+                              print(f'part-13: full insertion repair pos={i} char={chr(c)}')
                               break
-                      if repaired is not None: break
+                      if repaired is not None:
+                          break
                   if repaired is None:
-                      raise SystemExit('unable to repair part-13')
+                      raise SystemExit('part-13: unable to repair one-character deletion')
                   p13a, p13b = repaired[:8000], repaired[8000:]
           else:
               raise SystemExit(f'part-13 unexpected len={len(p13)} sha1a={h(p13[:8000])} sha1b={h(p13[8000:])}')
-          assert h(p13a) == expected['13a'] and h(p13b) == expected['13b']
+
+          if h(p12a) != expected['12a'] or h(p12b) != expected['12b']:
+              raise SystemExit('part-12 repaired digest mismatch')
+          if h(p13a) != expected['13a'] or h(p13b) != expected['13b']:
+              raise SystemExit('part-13 repaired digest mismatch')
           Path('/tmp/part-13a.b64').write_bytes(p13a)
           Path('/tmp/part-13b.b64').write_bytes(p13b)
           print('chunk repair verified')
