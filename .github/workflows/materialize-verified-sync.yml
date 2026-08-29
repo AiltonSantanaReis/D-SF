@@ -22,7 +22,7 @@ jobs:
           ref: sync/r3-r5d-verified-hw04
           fetch-depth: 0
 
-      - name: Verify and extract payload
+      - name: Verify and extract canonical payload
         shell: bash
         run: |
           set -euo pipefail
@@ -35,8 +35,7 @@ jobs:
             .sync/part-05.b64 \
             .sync/part-06.b64 \
             .sync/part-07.b64 \
-            .sync/part-08a.b64 \
-            .sync/part-08b.b64 \
+            .sync/part-08.b64 \
             .sync/part-09.b64 \
             .sync/part-10.b64 \
             .sync/part-11ab.b64 \
@@ -58,6 +57,41 @@ jobs:
           test -f SYNC_MANIFEST.json
           mv SYNC_MANIFEST.json docs/SYNC_MANIFEST_R3_R5D.json
 
+      - name: Verify every materialized payload file
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          manifest=json.loads(Path('docs/SYNC_MANIFEST_R3_R5D.json').read_text())
+          errors=[]
+          for rec in manifest['files']:
+              p=Path(rec['path'])
+              if not p.is_file():
+                  errors.append(f'missing {p}')
+                  continue
+              data=p.read_bytes()
+              if len(data)!=rec['bytes']:
+                  errors.append(f'bytes {p}: {len(data)} != {rec["bytes"]}')
+              got=hashlib.sha256(data).hexdigest()
+              if got!=rec['sha256']:
+                  errors.append(f'sha256 {p}: {got} != {rec["sha256"]}')
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print(f"manifest verified: {len(manifest['files'])} files")
+          PY
+
+      - name: Build and test materialized source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/dsf-sync-build
+          cmake -S . -B /tmp/dsf-sync-build -DCMAKE_BUILD_TYPE=Release -DAION_ENABLE_WARNINGS=ON
+          cmake --build /tmp/dsf-sync-build -j2
+          ctest --test-dir /tmp/dsf-sync-build --output-on-failure
+          ctest --test-dir /tmp/dsf-sync-build -N | grep -F 'Total Tests: 17'
+
       - name: Remove transport-only files
         shell: bash
         run: |
@@ -71,9 +105,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
+          git config user.name "D-SF Research Automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --check
-          git commit -m "sync: materialize verified R3-R5D source and closeouts"
+          git commit -m "sync: materialize verified R3-R5D source and R5E HW01-HW04 record"
           git push origin HEAD:sync/r3-r5d-verified-hw04
