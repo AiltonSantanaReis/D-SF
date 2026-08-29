@@ -22,27 +22,68 @@ jobs:
           ref: sync/r3-r5d-verified-hw04
           fetch-depth: 0
 
-      - name: Verify and extract canonical payload
+      - name: Resolve chunk order by immutable archive digest
         shell: bash
         run: |
           set -euo pipefail
-          cat \
-            .sync/part-00.b64 \
-            .sync/part-01.b64 \
-            .sync/part-02.b64 \
-            .sync/part-03.b64 \
-            .sync/part-04.b64 \
-            .sync/part-05.b64 \
-            .sync/part-06.b64 \
-            .sync/part-07.b64 \
-            .sync/part-08.b64 \
-            .sync/part-09.b64 \
-            .sync/part-10.b64 \
-            .sync/part-11ab.b64 \
-            .sync/part-11cd.b64 \
-            > /tmp/dsf-sync-payload.b64
-          base64 --decode /tmp/dsf-sync-payload.b64 > /tmp/dsf-sync-payload.tar.gz
+          python3 - <<'PY'
+          import base64, hashlib, itertools
+          from pathlib import Path
+
+          expected = '63bdf9ac84e1f165a01b94bb463e00c99ee875cde413259fe6ce850c6ee25f42'
+          fixed_names = [f'part-{i:02d}.b64' for i in range(8)]
+          suspect_names = [
+              'part-08.b64', 'part-08a.b64', 'part-08b.b64',
+              'part-09.b64', 'part-10.b64', 'part-11ab.b64', 'part-11cd.b64'
+          ]
+
+          def read(name):
+              return Path('.sync', name).read_bytes()
+
+          # All transport chunks are slices on 4-character Base64 boundaries.
+          # Decode each once, then search only over concatenation order/subset.
+          decoded = {}
+          for name in fixed_names + suspect_names:
+              raw = read(name)
+              if len(raw) % 4:
+                  raise SystemExit(f'non-canonical base64 boundary: {name} size={len(raw)}')
+              if b'=' in raw:
+                  raise SystemExit(f'unexpected padding in transport chunk: {name}')
+              decoded[name] = base64.b64decode(raw, validate=True)
+
+          prefix = b''.join(decoded[n] for n in fixed_names)
+          found = None
+          tested = 0
+          for k in range(1, len(suspect_names) + 1):
+              for order in itertools.permutations(suspect_names, k):
+                  tested += 1
+                  payload = prefix + b''.join(decoded[n] for n in order)
+                  if hashlib.sha256(payload).hexdigest() == expected:
+                      found = order
+                      Path('/tmp/dsf-sync-payload.tar.gz').write_bytes(payload)
+                      break
+              if found:
+                  break
+
+          print(f'candidate sequences tested: {tested}')
+          if not found:
+              # Diagnostics useful if the immutable digest cannot be reconstructed.
+              a = read('part-08.b64')
+              b = read('part-08a.b64') + read('part-08b.b64')
+              print(f'part08 == part08a+part08b: {a == b}')
+              print(f'part08 sha256: {hashlib.sha256(a).hexdigest()}')
+              print(f'part08ab sha256: {hashlib.sha256(b).hexdigest()}')
+              raise SystemExit('no chunk sequence reproduces immutable archive digest')
+
+          print('resolved order: ' + ' '.join(fixed_names + list(found)))
+          print('archive sha256: ' + expected)
+          PY
           echo "63bdf9ac84e1f165a01b94bb463e00c99ee875cde413259fe6ce850c6ee25f42  /tmp/dsf-sync-payload.tar.gz" | sha256sum --check --strict
+
+      - name: Verify archive safety and extract
+        shell: bash
+        run: |
+          set -euo pipefail
           python3 - <<'PY'
           import tarfile
           from pathlib import Path
