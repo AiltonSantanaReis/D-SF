@@ -12,7 +12,7 @@
     "HW02": "VERIFIED_VKDEVICE_REAL_MEMORY_ROUNDTRIP",
     "HW03": "VERIFIED_DIRECT_COMPUTE_CPU_ORACLE",
     "HW04": "VERIFIED_INDIRECT_DISPATCH_CPU_ORACLE",
-    "HW05": "NEXT_GPU_TIMESTAMPS_DIRECT_INDIRECT_CHARACTERIZATION"
+    "HW05": "VERIFIED_GPU_TIMESTAMP_DIRECT_INDIRECT_CHARACTERIZATION"
   },
   "target": {
     "gpu": "NVIDIA GeForce RTX 3070 Ti",
@@ -35,7 +35,7 @@
     "validation_errors": 0,
     "validation_warnings": 0
   },
-  "latest_evidence_sha256": "da327a30d50ebfcc90431d06cd14be585efb0d6b29cb16dadbe308a3eb1faa31",
+  "latest_evidence_sha256": "528305209d0c6b9dfc39edf6ec6b4f50d6a19bdfd6aa093c21d3c95c23b77405",
   "hw04": {
     "launch_mode": "Indirect",
     "binding_model": "descriptor_set_baseline",
@@ -55,6 +55,26 @@
     "output_fnv1a64": "0x8e2eef1faffc414f",
     "validation_errors": 0,
     "validation_warnings": 0
+  },
+  "hw05": {
+    "launch_modes": ["Direct", "Indirect"],
+    "elements": 1048576,
+    "cold_samples_per_mode": 1,
+    "warm_samples_per_mode": 31,
+    "total_samples": 64,
+    "gpu_timestamp_stage": "COMPUTE_SHADER",
+    "timestamp_period_ns": 1,
+    "timestamp_valid_bits": 64,
+    "cpu_oracle_match": true,
+    "expected_fnv1a64": "0x8e2eef1faffc414f",
+    "output_fnv1a64": "0x8e2eef1faffc414f",
+    "validation_errors": 0,
+    "validation_warnings": 0,
+    "direct_warm_gpu_median_ms": 0.015392,
+    "indirect_warm_gpu_median_ms": 0.014944,
+    "direct_warm_total_median_ms": 4.6354,
+    "indirect_warm_total_median_ms": 4.6424,
+    "non_claim": "No universal Direct/Indirect winner"
   },
   "documentation": {
     "canonical_history_policy": "active_docs_plus_immutable_milestone_snapshots",

@@ -639,13 +639,55 @@ validation warnings: 0
 
 Status: `VERIFIED — HARDWARE RESULT`.
 
-HW03 == HW04 == CPU oracle no workload testado. Nenhuma conclusão de performance Direct vs Indirect foi promovida.
+HW03 == HW04 == HW05 == CPU oracle no workload testado. HW05 mediu timestamps GPU e custos CPU de Direct e Indirect; nenhum vencedor universal foi promovido.
+
+---
+
+## 24. HW05 — Direct/Indirect Timestamp Characterization
+
+Evidence ZIP SHA-256:
+
+`text
+528305209d0c6b9dfc39edf6ec6b4f50d6a19bdfd6aa093c21d3c95c23b77405
+`
+
+`text
+hardware: NVIDIA GeForce RTX 3070 Ti
+driver: 610.47
+Vulkan device API: 1.4.341
+queue family: 2
+timestamp stage: COMPUTE_SHADER
+timestamp period: 1 ns
+timestamp valid bits: 64
+launch modes: Direct, Indirect
+samples: 1 cold + 31 warm per mode; warm alternating
+elements: 1,048,576 uint32
+workgroups: 4096
+CPU oracle:       0x8e2eef1faffc414f
+all GPU outputs:  0x8e2eef1faffc414f
+full comparison: PASS (64/64)
+validation errors: 0
+validation warnings: 0
+compile/link/probe exits: 0/0/0
+`
+
+Warm medians:
+
+`text
+Direct:   GPU 0.015392 ms; host total 4.6354 ms
+Indirect: GPU 0.014944 ms; host total 4.6424 ms
+`
+
+Status: `VERIFIED — HARDWARE RESULT`.
+
+Scope: the GPU timestamp median favored Indirect while the host-observed total median marginally favored Direct. This is workload- and hardware-specific evidence, not a universal launch-path decision. DGC and modern descriptor candidates remain unverified.
+
 
 ---
 
 # PARTE VI — REGRESSION GATE CONSOLIDADO
 
-## 24. CPU/reference regression antes do snapshot HW04
+## 25. CPU/reference regression after HW05 documentation snapshot
 
 Ambiente: Linux x86-64 sandbox, GCC 14.2, Release.
 
@@ -679,12 +721,12 @@ Compiler/sanitizer claims adicionais permanecem vinculados aos closeouts especí
 
 ---
 
-## 25. Non-claims atuais
+## 26. Non-claims atuais
 
-Ainda não verificado/medido até HW04:
+Após HW05, permanecem não verificados:
 
-- Direct vs Indirect GPU execution performance;
-- CPU preparation/submit comparison;
+
+
 - DGC runtime/performance;
 - descriptor buffer/descriptor heap runtime comparison;
 - PCIe bandwidth characterization;

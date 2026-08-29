@@ -1,0 +1,85 @@
+{
+  "schema": "dsf.r5e.hw05.closeout.v1",
+  "status": "VERIFIED_HARDWARE_RESULT",
+  "evidence_filename": "R5E_HW05_EVIDENCE_20260829-150208.zip",
+  "evidence_sha256": "528305209d0c6b9dfc39edf6ec6b4f50d6a19bdfd6aa093c21d3c95c23b77405",
+  "integrity": {
+    "internal_files_verified": 23,
+    "internal_hash_mismatches": 0,
+    "external_zip_hash": "PASS"
+  },
+  "tool_exit_codes": {
+    "shader_compile": 0,
+    "compile": 0,
+    "link": 0,
+    "probe": 0
+  },
+  "duration_seconds": 3.392,
+  "hardware": {
+    "device_name": "NVIDIA GeForce RTX 3070 Ti",
+    "vendor_id": 4318,
+    "device_id": 9346,
+    "driver": "610.47",
+    "vulkan_device_api": "1.4.341",
+    "queue_family_index": 2,
+    "timestamp_period_ns": 1,
+    "timestamp_valid_bits": 64
+  },
+  "baseline": {
+    "binding_model": "descriptor_set_baseline",
+    "operation": "out[i] = in[i] * 3u + 7u",
+    "elements": 1048576,
+    "local_size_x": 256,
+    "workgroup_count_x": 4096,
+    "indirect_command": {"x": 4096, "y": 1, "z": 1},
+    "indirect_command_bytes": 12,
+    "input_fnv1a64": "0xac41f8629b52fce0",
+    "expected_fnv1a64": "0x8e2eef1faffc414f"
+  },
+  "sampling": {
+    "cold_samples_per_mode": 1,
+    "warm_samples_per_mode": 31,
+    "total_samples": 64,
+    "warm_order": "alternating_direct_indirect",
+    "gpu_timestamp_stage": "COMPUTE_SHADER",
+    "cpu_measurements": ["prepare", "record", "submit", "wait", "query_read", "total"]
+  },
+  "correctness": {
+    "all_samples_match_cpu_oracle": true,
+    "output_fnv1a64": "0x8e2eef1faffc414f",
+    "validation_errors": 0,
+    "validation_warnings": 0
+  },
+  "warm_statistics_ms": {
+    "Direct": {
+      "prepare": {"median": 0.0103, "p95": 0.0115, "max": 0.0128},
+      "record": {"median": 0.0433, "p95": 0.0508, "max": 0.0656},
+      "submit": {"median": 0.0347, "p95": 0.0380, "max": 0.0490},
+      "wait": {"median": 0.2642, "p95": 0.4064, "max": 0.4970},
+      "query_read": {"median": 4.2615, "p95": 4.6458, "max": 4.6704},
+      "total": {"median": 4.6354, "p95": 5.0393, "max": 5.1055},
+      "gpu": {"median": 0.015392, "p95": 0.020992, "max": 0.021664}
+    },
+    "Indirect": {
+      "prepare": {"median": 0.0096, "p95": 0.0113, "max": 0.0127},
+      "record": {"median": 0.0436, "p95": 0.0535, "max": 0.0610},
+      "submit": {"median": 0.0349, "p95": 0.0450, "max": 0.0487},
+      "wait": {"median": 0.2571, "p95": 0.4138, "max": 0.4398},
+      "query_read": {"median": 4.2544, "p95": 4.6342, "max": 4.6558},
+      "total": {"median": 4.6424, "p95": 5.0865, "max": 5.1853},
+      "gpu": {"median": 0.014944, "p95": 0.018144, "max": 0.018144}
+    }
+  },
+  "decision": "GPU timestamp median favored Indirect in this measured scope; total host-observed median was marginally lower for Direct; no universal winner promoted.",
+  "non_claims": [
+    "no universal Direct/Indirect superiority",
+    "no DGC execution or performance",
+    "no descriptor-buffer or descriptor-heap runtime superiority",
+    "no production residency or eviction claim",
+    "no cross-GPU or cross-driver generalization",
+    "no final synchronization/barrier policy",
+    "no integrated World-to-Device demonstrator",
+    "R5E remains in progress",
+    "RC-1 remains open"
+  ]
+}

@@ -84,7 +84,7 @@ Every relevant result must use an explicit evidence class.
 | **FALSIFIED** | A tested hypothesis/path failed in the stated scope and is not promoted. |
 | **NOT MEASURED** | No performance or cost claim is permitted. |
 
-`VERIFIED` always has a scope. As of R5E-HW04, **no D-SF contract is classified as `FOUNDATIONAL`**.
+`VERIFIED` always has a scope. As of R5E-HW05, **no D-SF contract is classified as `FOUNDATIONAL`**.
 
 ---
 
@@ -152,7 +152,7 @@ The active architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECT
 | R5E-HW02 | **VERIFIED** | Real `VkDevice` + `VkDeviceMemory` roundtrip |
 | R5E-HW03 | **VERIFIED** | Real Direct compute vs exact CPU oracle |
 | R5E-HW04 | **VERIFIED** | Real Indirect compute vs exact CPU oracle |
-| R5E-HW05 | **NEXT** | GPU timestamp characterization: Direct vs Indirect |
+| R5E-HW05 | **VERIFIED** | Direct vs Indirect GPU timestamps and CPU characterization; no universal winner |
 
 The project roadmap and promotion rules are maintained in [`docs/PROJECT.md`](docs/PROJECT.md).
 
@@ -519,9 +519,9 @@ A later stage is not allowed to silently invalidate a previously promoted invari
 
 ---
 
-## 13. Current Next Step — R5E-HW05
+## 13. State after R5E-HW05
 
-The next authorized experiment is:
+The next authorized hardware sequence is now:
 
 > **GPU Timestamp & Direct/Indirect Characterization**
 
@@ -553,14 +553,14 @@ CPU/GPU synchronization
 
 The experiment should also distinguish cold/warm effects where relevant and use repeated samples rather than a single timing.
 
-Only after HW05 may the project make an evidence-based statement about the cost difference between Direct and Indirect for this workload.
+HW05 has now provided an evidence-based, scope-limited statement about the cost difference between Direct and Indirect for this workload.
 
 ### After HW05
 
-Planned order, subject to evidence:
+Current controlled sequence, subject to evidence:
 
 ```text
-HW05  Direct vs Indirect timestamps / characterization
+HW05  ✓ Direct vs Indirect timestamps / characterization completed
   ↓
 HW06  synchronization/barrier characterization as required
   ↓
@@ -584,10 +584,9 @@ This order is not ideological. A newer API is never promoted simply because it i
 
 ## 14. What Is Not Yet Claimed
 
-As of R5E-HW04, D-SF does **not** claim:
+As of R5E-HW05, D-SF does **not** claim:
 
-- Direct is faster than Indirect;
-- Indirect is faster than Direct;
+- neither launch mode is a universal winner for the measured workload;
 - DGC is faster or preferable;
 - descriptor heap/buffer is the final binding model;
 - current reference barriers are the final hardware synchronization policy;
@@ -625,7 +624,10 @@ docs/R5E_HARDWARE_BRINGUP.md
     hardware bring-up summary
 
 docs/R5E_HW04_CLOSEOUT.md
-    latest closed hardware gate
+    HW04 indirect-compute closeout
+
+docs/R5E_HW05_CLOSEOUT.md
+    latest closed hardware characterization gate
 
 include/ + src/
     promoted reference implementation snapshot
@@ -660,7 +662,7 @@ R5E-HW01  ✓ real hardware fingerprint
 R5E-HW02  ✓ real Vulkan memory roundtrip
 R5E-HW03  ✓ real Direct compute
 R5E-HW04  ✓ real Indirect compute
-R5E-HW05  → next: measured Direct vs Indirect
+R5E-HW05  ✓ measured Direct vs Indirect
 
 R6        planned: integrated demonstrator
 ```

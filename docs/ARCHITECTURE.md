@@ -1,6 +1,6 @@
 # D-SF — Arquitetura Ativa
 
-Status: arquitetura experimental consolidada até **R5E-HW04**. Nenhum contrato está `FOUNDATIONAL`.
+Status: arquitetura experimental consolidada até **R5E-HW05**. Nenhum contrato está `FOUNDATIONAL`.
 
 Este documento mantém duas camadas deliberadas:
 
@@ -228,7 +228,7 @@ Nenhuma estrutura de descriptor/barrier de R5D é declarada layout final de hard
 
 ---
 
-## 9. Vulkan Hardware State — R5E-HW01 a HW04
+## 9. Vulkan Hardware State — R5E-HW01 a HW05
 
 Hardware de teste atual:
 
@@ -252,15 +252,13 @@ Verificado em hardware real:
 - exact CPU oracle equality para 1.048.576 `uint32` no workload HW03/HW04;
 - zero validation errors/warnings nos gates aceitos.
 
-Isso prova correção funcional no escopo testado. **Ainda não prova:** Direct vs Indirect performance, DGC runtime/performance, descriptor heap runtime, PCIe bandwidth, final barrier policy ou production residency behavior.
+Isso prova correção funcional no escopo testado. **Ainda não prova:** uma superioridade universal de Direct sobre Indirect, DGC runtime/performance, descriptor heap runtime, PCIe bandwidth, final barrier policy ou production residency behavior.
 
 ---
 
-## 10. Próxima fronteira
+## 10. Próxima fronteira após HW05
 
-**R5E-HW05 — GPU Timestamp & Direct/Indirect Characterization.**
-
-O gate deve manter shader, input, output oracle, binding baseline e element count equivalentes a HW03/HW04, acrescentando timestamps e custos CPU relevantes. Performance não pode ser inferida antes dessa medição.
+HW05 verificou a caracterização medida de Direct e Indirect no escopo testado, sem congelar um launch path. A próxima fronteira é caracterizar, em gates separados e controlados, candidatos DGC e modelos modernos de descriptor. Nenhum contrato está classificado como FOUNDATIONAL.
 
 ---
 

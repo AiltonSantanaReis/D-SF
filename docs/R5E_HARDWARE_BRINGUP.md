@@ -1,4 +1,4 @@
-# R5E Hardware Bring-up — Verified State through HW04
+# R5E Hardware Bring-up — Verified State through HW05
 
 R5E is the first D-SF stage that distinguishes **real hardware evidence** from sandbox/reference results.
 
@@ -10,6 +10,7 @@ R5E is the first D-SF stage that distinguishes **real hardware evidence** from s
 | HW02 | HARDWARE RESULT | Real `VkDevice`, device memory, 16 MiB HOST → DEVICE_LOCAL → HOST roundtrip, exact byte comparison, validation clean |
 | HW03 | HARDWARE RESULT | Real Direct compute, 1,048,576 `uint32`, exact CPU oracle, validation clean |
 | HW04 | HARDWARE RESULT | Real `vkCmdDispatchIndirect` from resident 12-byte control buffer, exact same CPU oracle, validation clean |
+| HW05 | HARDWARE RESULT | Direct vs Indirect GPU timestamp and CPU characterization; 64 samples, exact CPU oracle, validation clean
 
 ## HW03 / HW04 controlled comparison
 
@@ -43,4 +44,4 @@ This proves functional equivalence only for the tested workload. No performance 
 
 ## Next gate
 
-HW05 should characterize **Direct vs Indirect using GPU timestamps and CPU-side timing without changing the semantic workload**. DGC remains a later gate; capability availability is not treated as evidence of superiority.
+HW05 is verified; subsequent gates should characterize synchronization/barrier behavior, DGC and modern descriptor candidates separately. Capability availability is not treated as evidence of superiority.

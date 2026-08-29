@@ -1,4 +1,4 @@
-# D-SF Research Status — R3 through R5E-HW04
+# D-SF Research Status — R3 through R5E-HW05
 
 This document records verified research milestones that were developed and tested locally after the repository's earlier R2.1 snapshot. GitHub is a **research record**, not the authority for unverified experiments.
 
@@ -125,9 +125,9 @@ Controlled conclusion:
 
 for this workload and tested configuration. This is **functional equivalence**, not performance equivalence.
 
-## Current next question
+## HW05 and current next question
 
-The next hardware gate should measure Direct vs Indirect using GPU timestamps and CPU-side timing while holding the workload constant. DGC and descriptor-heap execution remain later gates; their availability is not treated as evidence that they are superior.
+HW05 measured Direct vs Indirect using GPU timestamps and CPU-side timing while holding the workload constant. GPU timestamp median favored Indirect in scope; total host-observed median marginally favored Direct. No universal winner is promoted. DGC and descriptor-heap execution remain later gates; their availability is not treated as evidence that they are superior.
 
 ## Publication gate
 

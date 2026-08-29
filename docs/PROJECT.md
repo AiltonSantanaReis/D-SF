@@ -1,6 +1,6 @@
 # D-SF — Projeto, Governança e Critérios de Fechamento
 
-> **Estado ativo:** R5E-HW04 fechado como `VERIFIED — HARDWARE RESULT`; próxima ação autorizada: **R5E-HW05 — GPU Timestamp & Direct/Indirect Characterization**.
+> **Estado ativo:** R5E-HW05 fechado como VERIFIED — HARDWARE RESULT; R5E permanece em progresso e a próxima ação autorizada é a caracterização controlada dos candidatos DGC/descriptor modernos.
 
 Este documento contém primeiro a governança/roadmap **ativos** e, ao final, preserva o baseline detalhado R0–R2.1 como apêndice histórico. O apêndice não é descartado quando o roadmap avança.
 
@@ -119,7 +119,7 @@ IDEA → HYPOTHESIS → EXPERIMENTAL → VERIFIED → FOUNDATIONAL
 
 `VERIFIED` sempre declara escopo.
 
-**Até R5E-HW04 nenhum contrato está `FOUNDATIONAL`.**
+**Até R5E-HW05 nenhum contrato está `FOUNDATIONAL`.**
 
 ## 8. Governança documental
 
@@ -194,7 +194,7 @@ Vulkan device API 1.4.341
 - HW02 `VERIFIED`: real VkDevice/VkDeviceMemory + 16 MiB roundtrip byte-exact;
 - HW03 `VERIFIED`: real Direct compute, exact CPU oracle;
 - HW04 `VERIFIED`: real `vkCmdDispatchIndirect`, resident `{4096,1,1}` control buffer, same CPU oracle;
-- HW05 `NEXT`: GPU timestamps + Direct/Indirect characterization.
+- HW05 VERIFIED: GPU timestamps e caracterização controlada Direct vs Indirect; resultado específico ao workload/GPU, sem vencedor universal.
 
 ### R6 — `PLANNED / NOT VERIFIED`
 Integrated World + Execution + Spatial + Geometry + Device demonstrator.
@@ -233,7 +233,7 @@ RC-1 exige, no mínimo:
 11. auditabilidade;
 12. nenhum critical unknown mascarado como VERIFIED/FOUNDATIONAL.
 
-R5E começou a satisfazer GPU evidence; RC-1 **não está fechado**.
+R5E possui agora evidência medida de execução GPU real para Direct e Indirect, mas a fase continua aberta e RC-1 **não está fechado**.
 
 ## 13. Antiobjetivos permanentes
 
@@ -248,11 +248,9 @@ R5E começou a satisfazer GPU evidence; RC-1 **não está fechado**.
 - hardware numbers não medidos;
 - fontes documentais concorrentes.
 
-## 14. Próxima ação autorizada
+## 14. Próxima ação autorizada após HW05
 
-**R5E-HW05 — GPU Timestamp & Direct/Indirect Characterization.**
-
-Manter input, shader, operation, element count, binding baseline, oracle e target GPU equivalentes a HW03/HW04. Adicionar GPU timestamps, repeated samples e CPU prep/record/submit/sync quando relevante. Nenhuma superioridade Direct/Indirect antes desses dados.
+Após o HW05, a próxima ação autorizada é uma sequência de gates controlados para candidatos DGC e modelos modernos de descriptor, mantendo oracle, workload comparável, evidência física, integridade e non-claims. O HW05 não autoriza escolher tecnologia por preferência nem fechar R5E.
 
 ---
 

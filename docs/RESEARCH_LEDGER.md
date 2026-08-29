@@ -1496,9 +1496,15 @@ Adicionar:
 - CPU preparation/record/submit/synchronization quando relevante;
 - median/tail characterization.
 
-### D-046 — Não escolher Direct/Indirect/DGC por preferência
+## L-087 — R5E-HW05 Direct/Indirect characterization
 
-HW05 mede Direct vs Indirect. DGC e descriptor modern paths entram depois como candidatos controlados. O vencedor, se houver, é workload/hardware-specific.
+HW05 manteve o workload semântico de HW03/HW04 e trocou somente o mecanismo de launch. Em RTX 3070 Ti real, uma amostra fria e 31 quentes por modo alternado mediram timestamps GPU e custos CPU separados. Todos os 64 outputs coincidiram com o oracle CPU 0x8e2eef1faffc414f; validação 0/0; 23 arquivos internos tiveram hashes verificados sem mismatch.
+
+Warm GPU timestamp median: Direct 0.015392 ms, Indirect 0.014944 ms. Warm total median: Direct 4.6354 ms, Indirect 4.6424 ms. Resultado específico ao workload, GPU, driver e protocolo.
+
+### D-047 — HW05 mede sem congelar launch path
+
+Nenhuma preferência universal Direct/Indirect/DGC é promovida; DGC e descriptor modern paths permanecem candidatos a gates controlados posteriores.
 
 ---
 
@@ -1527,4 +1533,5 @@ HW05 mede Direct vs Indirect. DGC e descriptor modern paths entram depois como c
 | D-043 | HW04 Indirect compute functionally equivalent no workload. | VERIFIED hardware correctness |
 | D-044 | Sandbox/local = laboratório; GitHub = milestone record. | regra ativa |
 | D-045 | Não substituir documentos canônicos detalhados por resumo destrutivo. | regra ativa |
-| D-046 | HW05 mede antes de escolher launch path. | próxima fase |
+| D-046 | HW05 mede antes de escolher launch path. | concluído em HW05 |
+| D-047 | Não congelar Direct/Indirect/DGC por preferência; medir por workload/hardware. | regra ativa após HW05 |
