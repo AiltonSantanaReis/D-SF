@@ -2,29 +2,23 @@
 
 ## 1. Finalidade
 
-Este documento contém a evidência reproduzível ativa do baseline R0–R2.1:
+Este documento contém evidência reproduzível e fingerprints promovidos do D-SF. Resultados antigos não são removidos quando novas fases avançam; são preservados e recebem escopo explícito.
 
-- condições de teste;
-- hashes canônicos;
-- workloads;
-- timings observados;
-- comparações entre implementações;
-- sanitizers/compiladores;
-- limitações que impedem conclusões mais fortes.
+Classes usadas:
 
-Ele não transforma benchmark de laboratório em promessa de produção.
+- `REFERENCE RESULT` — CPU/reference semantics ou medições de laboratório;
+- `HARDWARE RESULT` — executado/observado em hardware alvo identificado;
+- `PARTIAL` — evidência válida, porém incompleta para uma conclusão mais forte;
+- `FALSIFIED` — caminho rejeitado no escopo testado;
+- `NOT MEASURED` — nenhuma afirmação de custo permitida.
+
+Todo número deve ser lido como “observado neste workload/ambiente”.
 
 ---
 
-## 2. Regra de interpretação
+# PARTE I — BASELINE R0–R2.1 PRESERVADO
 
-Todo número neste documento deve ser lido como:
-
-> “foi observado neste workload e ambiente registrados”.
-
-Nunca como:
-
-> “a engine completa sempre executará nessa velocidade”.
+## 2. Regra de interpretação do baseline
 
 Particularmente:
 
@@ -34,56 +28,37 @@ Particularmente:
 - x86-64 Linux não prova Windows/ARM;
 - duas versões de compilador não provam determinismo universal.
 
----
-
-## 3. Ambiente registrado
+## 3. Ambiente R0–R2.1
 
 Os artefatos finais R2/R2.1 registraram:
 
 - Linux x86-64;
 - 5 CPUs/cores disponíveis no ambiente compartilhado;
-- host model exposto: AMD EPYC 9V74;
+- host model exposto em uma execução: AMD EPYC 9V74;
 - GCC 14.2;
 - Clang 17;
 - CMake 3.31.6;
 - nenhuma GPU de produção/Vulkan usada nas medições.
 
-Uma etapa anterior da mesma conversa descreveu a sandbox como:
-
-- Intel Xeon Platinum 8573C;
-- 5 cores disponíveis;
-- aproximadamente 6 GB RAM.
-
-Como a sandbox é virtualizada/compartilhada e a identidade de host exposta diferiu entre execuções, **o modelo de CPU não é tratado como propriedade estável do laboratório**. Os resultados devem ser associados ao workload e à execução, não a uma afirmação de hardware fixo.
+Uma etapa anterior expôs Intel Xeon Platinum 8573C. Como a sandbox é virtualizada/compartilhada e a identidade de host variou, modelo de CPU não é tratado como propriedade estável.
 
 ---
 
-# R0 — Minimal Authoritative World
+## 4. R0 — Minimal Authoritative World
 
-## 4. Invariantes testados
+Invariantes testados:
 
 1. Entity ID `0` reservado para mutações de world scope.
-2. Entity IDs estáveis, sequenciais e sem skip silencioso por `CreateEntity`.
+2. IDs estáveis/sequenciais sem skip silencioso por `CreateEntity`.
 3. Transaction IDs monotônicos.
-4. Toda transação validada antes da primeira mutação autoritativa.
-5. Valores vetoriais não finitos rejeitados.
-6. `AdvanceReference` é uma mutação de world scope e exige `dt` finito e não negativo.
-7. Renderer e física não fazem parte do World Kernel de referência.
+4. Toda transaction validada antes da primeira mutação autoritativa.
+5. Vec3 não finito rejeitado.
+6. `AdvanceReference` exige `dt` finito/não negativo.
+7. Renderer/física não fazem parte do World Kernel de referência.
 
-## 5. Correção arquitetural descoberta durante R1
+Correção descoberta no caminho para R1: `reserve_entity_id()` avançava identidade fora da transaction. `CreateEntity` passou a alocar dentro da própria transaction e `next_entity_id()` tornou-se read-only.
 
-O LAB-0 possuía `reserve_entity_id()`, que avançava o cursor de identidade fora das transações. Portanto um journal contendo somente transações poderia não reconstruir o cursor futuro exato.
-
-Correção:
-
-- `CreateEntity` passou a alocar o próximo ID dentro da própria transação;
-- `next_entity_id()` passou a ser read-only.
-
-Essa correção tornou a identidade transaction-complete no modelo testado.
-
-## 6. Baselines iniciais registrados na conversa
-
-Antes da refatoração R1, um primeiro benchmark de entidades leves foi reportado com aproximadamente:
+### Baselines iniciais
 
 | Entidades | Tempo CPU reportado |
 |---:|---:|
@@ -91,61 +66,42 @@ Antes da refatoração R1, um primeiro benchmark de entidades leves foi reportad
 | 1.000.000 | ~1.357 ms/frame |
 | 3.000.000 | ~3.917 ms/frame |
 
-A atualização intermediária da mesma etapa também citou ~1.22 ms para 1.000.000 de entidades. A diferença é preservada como variação/execução distinta de sandbox; nenhum desses valores é tratado como especificação.
+Execução intermediária também citou ~1.22 ms para 1M; diferença preservada como jitter/execução distinta.
 
-Após o avanço ser transacional, o baseline registrado passou a ser:
+Após integração transacional:
 
-### 1.000.000 entidades / 120 frames
-
+- 1.000.000 entidades / 120 frames;
 - spawn transaction: 3.000.000 mutations;
 - spawn commit: ~39.873 ms;
 - simulation: ~1.229 ms/frame;
-- ~813.5 milhões de updates mínimos de posição/s.
+- ~813.5M minimal position updates/s.
 
-Workload de update:
+Workload:
 
 ```text
 position += velocity * dt
 ```
 
-Nenhuma IA, física complexa, animação, pathfinding ou gameplay completo está incluído.
-
 ---
 
-# R1 — Change Journal / SHA-256 / Replay / Rollback
+## 5. R1 — Change Journal / SHA-256 / Replay / Rollback
 
-## 7. Canonical SHA-256
+Canonical SHA-256 cobre serialização little-endian de schema version, identity cursor, transaction cursor, entity IDs/alive/health e raw IEEE-754 bits de position/velocity.
 
-O hash atual cobre serialização little-endian canônica de:
-
-- schema version;
-- next entity ID;
-- last transaction ID;
-- living entity count;
-- cada Entity ID alocado;
-- alive flag;
-- health;
-- raw IEEE-754 bits de position;
-- raw IEEE-754 bits de velocity.
-
-O SHA-256 implementado em C++ foi comparado a `Python hashlib.sha256()` para um World conhecido.
-
-Hash esperado e produzido:
+Cross-check C++ vs Python `hashlib.sha256()`:
 
 ```text
 9052d221ad22d52fb0a43dbec4410a9546d7bbb968642614ee0deb55758e7c33
 ```
 
-## 8. Replay determinístico R1
+### Replay determinístico
 
 Workload:
 
 - 256 entidades iniciais;
-- 5.000 simulation frames;
-- 5.001 total transactions incluindo spawn;
-- health changes periódicas;
-- destruction de entidade;
-- criação posterior de nova entidade;
+- 5.000 frames;
+- 5.001 transactions incluindo spawn;
+- health changes, destruction, later create;
 - `AdvanceReference(1/60)` transacional.
 
 Hash final:
@@ -154,121 +110,55 @@ Hash final:
 9e6b6a3bac5a0564e2f3100bcf7eed9d0e48ef44615382f27931d5dcb9960c57
 ```
 
-Foi reproduzido por:
+Reproduzido por original World, replay pristine, save/load e GCC/Clang x86-64 Linux.
 
-- World original;
-- replay a partir de World pristine usando somente forward transactions;
-- journal após save/load binário;
-- GCC 14.2 Release x86-64 Linux;
-- Clang 17 Release x86-64 Linux.
+### Rollback
 
-## 9. Rollback R1
+- rollback para checkpoint reproduziu hash original;
+- reapply tail reproduziu hash final;
+- full rollback do spawn journal-owned restaurou pristine hash + identity cursor.
 
-O histórico de 5.001 transações foi revertido até checkpoint anterior milhares de transações atrás.
+### Divergence guard
 
-Resultado:
+Rollback é rejeitado se World atual não corresponde ao hash tail esperado.
 
-- hash restaurado = hash originalmente registrado no checkpoint;
-- replay do tail removido voltou ao hash final original;
-- rollback de spawn journal-owned restaurou hash do World pristine e o cursor de identidade correspondente.
+### Performance R1
 
-## 10. Guard de divergência
+- journal commit total ~272.054 ms;
+- average ~0.054 ms/frame;
+- journal file 224.236 bytes;
+- save ~0.812 ms;
+- load ~0.720 ms;
+- replay ~1.504 ms;
+- rollback all ~275.413 ms.
 
-Se o World não corresponde ao hash tail esperado pelo journal, rollback é recusado.
-
-Objetivo: impedir que undo antigo seja aplicado sobre estado alterado fora da história controlada.
-
-## 11. R1 reference performance
-
-Cenário: 256 entidades, 5.000 frames, full post-commit SHA-256 e exact undo capture.
-
-- journal commit total: ~272.054 ms;
-- journal commit average: ~0.054 ms/frame;
-- persistent journal file: 224.236 bytes;
-- save: ~0.812 ms;
-- load: ~0.720 ms;
-- replay: ~1.504 ms;
-- rollback all: ~275.413 ms.
-
-### Limitação detectada
-
-O modelo R1 favorece correção, não escala:
-
-- `AdvanceReference` undo captura estado anterior de todas as entidades tocadas;
-- full World SHA-256 é recalculado por commit journal-owned.
-
-Hash incremental e rollback storage escalável permanecem abertos.
+Limitações: full-state hash por commit e undo que captura todos os touched states não escalam como implementação final.
 
 ---
 
-# R2 — Dependency Execution Graph
+## 6. R2 — Dependency Execution Graph
 
-## 12. Correctness tests
-
-A suíte R2 verifica:
-
-1. read/read na mesma wave;
-2. read/write serializado;
-3. write/write serializado;
-4. cycle rejection;
-5. undeclared access rejeitado antes do commit;
-6. serial e worker pool com mesmo transaction count relevante;
-7. serial e paralelo com mesmo final World hash;
-8. 120 frames / 4.096 entidades reproduzindo hash exato.
-
-Hash do teste R2 4.096/120:
+Correctness test hash 4.096 entities / 120 frames:
 
 ```text
 057e4f9d9e4921cb93da1a0c5b1245fafbadb49ce8755f572ebff34b558e53ca
 ```
 
-Reproduzido em:
-
-- GCC 14.2;
-- Clang 17;
-- ThreadSanitizer build do teste concorrente.
-
-## 13. Cross-worker correctness
-
-Workload:
-
-- 8.192 entidades;
-- 60 frames;
-- 4 sistemas;
-- 2 waves.
-
-Workers testados:
-
-- 1;
-- 2;
-- 4;
-- 5.
-
-Todos produziram:
+Cross-worker workload 8.192 entities / 60 frames / 4 systems / 2 waves, workers 1/2/4/5:
 
 ```text
 71ccbd8aaaed14974c7c70ab4879f099f42195dd1ed6d312d93fa8642cf4218c
 ```
 
-GCC e Clang reproduziram o mesmo hash.
+### Sanitizers
 
-## 14. Sanitizers R2
+- ASan pass;
+- UBSan pass;
+- TSan concurrent R2 test sem race reportada.
 
-- AddressSanitizer: suíte corrente passou sem erro reportado;
-- UndefinedBehaviorSanitizer: suíte corrente passou sem erro reportado;
-- ThreadSanitizer: concurrent R2 test passou sem data race reportada.
+### Compute-only microbenchmark
 
-Isso aumenta confiança, mas não constitui prova matemática de race freedom para código futuro.
-
-## 15. Scheduler compute-only microbenchmark
-
-Workload:
-
-- 32 sistemas independentes;
-- 750.000 deterministic integer iterations/system;
-- nenhum authoritative World write;
-- 7 samples por worker count;
-- mediana reportada.
+32 independent systems × 750.000 deterministic integer iterations:
 
 | Workers | Mediana | Speedup |
 |---:|---:|---:|
@@ -277,27 +167,15 @@ Workload:
 | 4 | 24.551 ms | 3.279× |
 | 5 | 23.186 ms | 3.472× |
 
-Auxiliary checksum em todos:
+Checksum:
 
 ```text
 3462961269496396242
 ```
 
-Conclusão limitada:
+### Authoritative World benchmark
 
-> O scheduler expõe paralelismo relevante quando o workload é suficientemente independente e compute-heavy.
-
-## 16. Authoritative World R2 benchmark
-
-Workload:
-
-- 8.192 entities;
-- 60 frames;
-- 4 systems;
-- 2 waves;
-- per-entity transactional patches;
-- 7 samples/worker count;
-- mediana.
+8.192 entities / 60 frames / 4 systems / 2 waves / per-entity patches:
 
 | Workers | Mediana | Speedup |
 |---:|---:|---:|
@@ -306,273 +184,114 @@ Workload:
 | 4 | 46.826 ms | 1.051× |
 | 5 | 45.700 ms | 1.076× |
 
-Durante a exploração anterior à mediana final, uma execução chegou a mostrar o worker path aproximadamente 18% mais lento que serial e outra amostragem mostrou ~1.21× para 2 workers e ~1.15× para 4–5. A mediana canônica do relatório é a tabela acima.
-
-### Gargalo identificado
-
-Per-entity writes materializavam grandes quantidades de:
-
-```text
-SetPosition(entity)
-SetVelocity(entity)
-SetHealth(entity)
-```
-
-Custo acumulado:
-
-- vector growth;
-- allocation/materialization;
-- merge;
-- validation;
-- serial authoritative commit;
-- memory traversal.
-
-Decisão: R2 correctness `VERIFIED`; R2 performance `PARTIAL`; criar R2.1 antes de R3.
+Conclusão: correctness `VERIFIED`; performance `PARTIAL`; patch materialization/merge/commit limitava escala.
 
 ---
 
-# R2.1 — Hybrid Transaction Patches
+## 7. R2.1 — Hybrid Transaction Patches
 
-## 17. Candidatos comparados
+Candidatos: per-entity oracle, contiguous ranges, fixed 256 pages, page clone/COW-style, disjoint parallel publication e persistent publisher.
 
-O experimento comparou conceitualmente/na implementação disponível:
+### Patch representation equivalence
 
-1. per-entity oracle;
-2. contiguous component ranges;
-3. fixed 256-entity pages;
-4. page clone / COW-style forward patches;
-5. disjoint parallel page publication;
-6. persistent parallel publisher para evitar lifecycle artificial.
-
-O objetivo não era eleger uma page size a priori.
-
-## 18. Patch representation equivalence
-
-Workload:
-
-- 4.096 entities;
-- 120 frames.
-
-Todos os caminhos testados reproduziram:
+4.096 entities / 120 frames:
 
 ```text
 a073236582885e8cd53f22aa4825ed539a00c74c7c026e61d9e1db9940ada47e
 ```
 
-O mesmo conjunto verificou:
+Replay/rollback/save/load/overlap rejection/non-finite rejection passaram.
 
-- replay do PatchJournal desde base independente;
-- rollback até frame 60;
-- replay do tail;
-- save/load binário;
-- overlapping ranges rejeitados sem alteração autoritativa;
-- non-finite Vec3 payload rejeitado sem alteração autoritativa.
+### Execution equivalence
 
-## 19. Hybrid scalar + range transaction
-
-Uma transação dedicada combinou:
-
-- scalar Health write;
-- scalar DestroyEntity;
-- dense Position range.
-
-Resultado:
-
-- commit;
-- serialize;
-- load;
-- replay;
-- rollback;
-
-com hash exato.
-
-Um scalar Position write sobrepondo Position range foi rejeitado atomicamente.
-
-## 20. Execution Kernel equivalence R2.1
-
-Workload:
-
-- 4.096 entities;
-- 120 frames;
-- original scalar serial oracle vs range-emitting R2.1 systems;
-- worker pool + PatchJournal.
-
-Hash de ambos:
+4.096 entities / 120 frames, scalar serial oracle vs range worker-pool + PatchJournal:
 
 ```text
 657f7bd1092e03c74acf7a38b7a70243f3a8decef268fcce0c552b4195f34a94
 ```
 
-Journal R2.1:
+Journal: 240 wave transactions; replay = same hash.
 
-- 240 wave transactions;
-- replay = mesmo final hash.
+### Integrated benchmark — 8.192 entities / 60 frames
 
-O legacy `execute()` foi testado para rejeitar range-producing systems em vez de ignorá-los silenciosamente.
-
-## 21. Cross-compiler e sanitizers R2.1
-
-Hashes R2.1 exatos reproduzidos em:
-
-- GCC 14.2 x86-64 Linux;
-- Clang 17 x86-64 Linux.
-
-Sanitizers:
-
-- ASan/UBSan: dedicated patch + execution tests sem erro reportado;
-- TSan: Execution Kernel R2.1 sem race reportada;
-- smaller persistent parallel-publisher workload sob TSan sem race reportada;
-- full patch TSan não é reivindicado: reference path com repeated thread spawning excedeu o limite de uma invocação da sandbox.
-
-## 22. Integrated R2 vs R2.1 — 8.192 entities / 60 frames
-
-Todos reproduziram:
-
-```text
-71ccbd8aaaed14974c7c70ab4879f099f42195dd1ed6d312d93fa8642cf4218c
-```
-
-| Candidate | Median | Speedup vs R2 scalar serial |
+| Candidate | Median | Speedup vs scalar serial |
 |---|---:|---:|
 | R2 scalar serial | 44.803 ms | 1.000× |
-| R2 scalar, 4 workers | 61.923 ms | 0.724× |
+| R2 scalar / 4 workers | 61.923 ms | 0.724× |
 | R2.1 ranges serial | 32.612 ms | 1.374× |
-| R2.1 ranges, 4 workers | 35.361 ms | 1.267× |
-| R2.1 ranges, 4 workers + persistent parallel commit | 36.034 ms | 1.243× |
+| ranges / 4 workers | 35.361 ms | 1.267× |
+| ranges / 4 workers + persistent commit | 36.034 ms | 1.243× |
 
-Conclusão:
+### 100.000 entities / 20 frames
 
-- range representation já ajuda;
-- worker overhead ainda pode superar benefício nessa escala.
-
-## 23. Integrated R2 vs R2.1 — 100.000 entities / 20 frames
-
-Todos reproduziram:
+Hash:
 
 ```text
 e6803f6411816d3e2261f091e7eb82718262ee9969b33dce9135467c9072c2c4
 ```
 
-| Candidate | Median | Speedup vs R2 scalar serial |
+| Candidate | Median | Speedup |
 |---|---:|---:|
-| R2 scalar serial | 192.925 ms | 1.000× |
-| R2 scalar, 4 workers | 151.304 ms | 1.275× |
-| R2.1 ranges serial | 138.596 ms | 1.392× |
-| R2.1 ranges, 4 workers | 102.150 ms | 1.889× |
-| R2.1 ranges, 4 workers + persistent parallel commit | 102.841 ms | 1.876× |
+| scalar serial | 192.925 ms | 1.000× |
+| scalar / 4 workers | 151.304 ms | 1.275× |
+| ranges serial | 138.596 ms | 1.392× |
+| ranges / 4 workers | 102.150 ms | 1.889× |
+| ranges / 4 workers + persistent commit | 102.841 ms | 1.876× |
 
-Conclusão:
+### 1.000.000 entities / 3 frames
 
-- dependency-derived workers começam a combinar melhor com menor patch granularity.
-
-## 24. Integrated R2 vs R2.1 — 1.000.000 entities / 3 frames
-
-Todos reproduziram:
+Hash:
 
 ```text
 61d624a0af70729626dafebd3b3bea4cb5a074e625ec7f17ac981f6eef5a2c60
 ```
 
-| Candidate | Median | Speedup vs R2 scalar serial |
+| Candidate | Median | Speedup |
 |---|---:|---:|
-| R2 scalar serial | 740.970 ms | 1.000× |
-| R2 scalar, 4 workers | 517.654 ms | 1.431× |
-| R2.1 ranges serial | 228.456 ms | 3.243× |
-| R2.1 ranges, 4 workers | 166.262 ms | 4.457× |
-| R2.1 ranges, 4 workers + persistent parallel commit | 150.455 ms | 4.925× |
+| scalar serial | 740.970 ms | 1.000× |
+| scalar / 4 workers | 517.654 ms | 1.431× |
+| ranges serial | 228.456 ms | 3.243× |
+| ranges / 4 workers | 166.262 ms | 4.457× |
+| ranges / 4 workers + persistent commit | 150.455 ms | 4.925× |
 
-Interpretação permitida:
+Essa tabela **não** é comparação contra engines externas.
 
-> O overhead do modelo scalar R2 cresceu o bastante para dominar este workload denso; typed ranges removeram grande parte desse overhead sem alterar o estado final.
+### Dense payload
 
-Interpretação proibida:
+1M entities / 3 components / 1 frame:
 
-> “D-SF é 4.925× mais rápido que engines tradicionais.”
+- scalar: 3.000.000 records / ~96.000.000 B vector capacity;
+- ranges: 3 records / ~28.000.120 B;
+- pages256: 11.721 records / ~28.468.840 B.
 
-Nenhuma engine tradicional foi comparada nesse experimento.
+### Sparse falsification — 100k, 200 frames, 1% Position
 
-## 25. Dense representation payload
+Clustered 1%:
 
-Para 1.000.000 entities, 3 components, 1 frame:
-
-- per-entity oracle: 3.000.000 logical records / ~96.000.000 bytes de mutation-vector capacity;
-- contiguous ranges: 3 logical records / ~28.000.120 bytes;
-- fixed pages 256: 11.721 logical records / ~28.468.840 bytes.
-
-Ranges removem repetição de entity/kind/header mantendo os valores efetivos de componentes.
-
-## 26. Sparse falsification — 100.000 entities / 200 frames / 1% Position writes
-
-### Clustered 1% — runs de 100 entities
-
-| Candidate | Total reference-run time | Records/frame | Payload/frame |
+| Candidate | Total | Records/frame | Payload/frame |
 |---|---:|---:|---:|
-| Per-entity scalar | 16.087 ms | 1.000 | 32.512 B |
-| Exact ranges | 17.213 ms | 10 | 12.400 B |
-| 256-page clone | 18.931 ms | 10 | 31.120 B |
-| Full component range | 249.793 ms | 1 | 1.200.040 B |
+| scalar | 16.087 ms | 1.000 | 32.512 B |
+| exact ranges | 17.213 ms | 10 | 12.400 B |
+| pages256 | 18.931 ms | 10 | 31.120 B |
+| full range | 249.793 ms | 1 | 1.200.040 B |
 
-Ranges reduziram payload, mas scalar permaneceu marginalmente mais rápido neste workload esparso pequeno.
+Scattered 1%:
 
-### Scattered 1% — isolated entities
-
-| Candidate | Total reference-run time | Records/frame | Payload/frame |
+| Candidate | Total | Records/frame | Payload/frame |
 |---|---:|---:|---:|
-| Per-entity scalar | 12.036 ms | 1.000 | 32.512 B |
-| Exact one-value ranges | 17.018 ms | 1.000 | 52.000 B |
-| 256-page clone | 285.824 ms | 391 | 1.215.640 B |
-| Full component range | 249.986 ms | 1 | 1.200.040 B |
+| scalar | 12.036 ms | 1.000 | 32.512 B |
+| one-value ranges | 17.018 ms | 1.000 | 52.000 B |
+| pages256 | 285.824 ms | 391 | 1.215.640 B |
+| full range | 249.986 ms | 1 | 1.200.040 B |
 
-Hash equality foi preservada entre candidatos dentro de cada pattern.
+Falsificado: fixed page 256 como solução universal.
 
-### Falsificação
+### Clean release R2.1
 
-Fixed page 256 não deve substituir scalar globalmente.
-
-Um único changed entity pode forçar movimentação de uma página majoritariamente limpa.
-
-Decisão atual:
-
-```text
-structural events       → scalar
-sparse scattered writes → scalar
-clustered writes        → exact ranges quando vantajoso
-dense writes            → large contiguous ranges
-fixed pages             → implementation option, not semantic truth
-COW pages               → not promoted
-parallel publication    → optional optimization when amortized
-```
-
----
-
-## 27. Clean release verification R2.1
-
-Source release version registrada no artefato: `0.0.2`.
-
-### GCC 14.2
-
-- Release;
-- x86-64 Linux;
-- configured strict warning set;
-- 4/4 CTest tests passed;
-- no compiler warnings no conjunto configurado.
-
-### Clang 17
-
-- Release;
-- x86-64 Linux;
-- 4/4 CTest tests passed;
-- no compiler warnings no conjunto configurado.
-
-Ambos reproduziram:
-
-```text
-657f7bd1092e03c74acf7a38b7a70243f3a8decef268fcce0c552b4195f34a94
-```
-
-O ZIP R2.1 foi extraído em diretório vazio, configurado com CMake, compilado e testado novamente; 100% dos testes passaram.
-
-SHA-256 do ZIP R2.1 entregue na conversa:
+- GCC 14.2 Release: 4/4 PASS, zero warnings no configured set;
+- Clang 17 Release: 4/4 PASS, zero warnings no configured set;
+- ZIP clean extraction rebuilt and tested;
+- ZIP SHA-256:
 
 ```text
 a4d0bcdef114e84456758c6c0067df50b1aaf599bda7686945d433aa9137cd63
@@ -580,20 +299,396 @@ a4d0bcdef114e84456758c6c0067df50b1aaf599bda7686945d433aa9137cd63
 
 ---
 
-## 28. Limitações abertas que impedem `FOUNDATIONAL`
+# PARTE II — R3 SPATIAL KERNEL
 
-1. Windows x86-64 replay/cross-machine.
-2. ARM replay.
-3. política explícita de floating-point determinism.
-4. CPU ↔ GPU authoritative equivalence.
-5. incremental/Merkle state hash.
-6. bounded/compressed rollback history.
-7. crash-safe journal checksums/recovery.
-8. automatic scalar-vs-range coalescing.
-9. sparse masked-page representation intermediária.
-10. NUMA/cache affinity.
-11. GPU-resident patch production/publication.
-12. Spatial Kernel ainda não selecionado.
-13. Geometry Kernel ainda não construído.
+## 8. Shared Spatial Snapshot
 
-Nenhuma dessas limitações invalida o resultado de referência correspondente; elas delimitam seu alcance.
+Architecture:
+
+```text
+Authoritative World
+→ R2.1 Hybrid Transaction
+→ Shared Spatial Snapshot
+→ derived BVH views
+```
+
+Snapshot SoA center/half, dense/sparse identity, ~24 bytes/object dense no modelo estrutural.
+
+R2.1 propagation usa `SpatialChangeSet {dirty_slots, dirty_ranges}`. Create/destroy causa structural rebuild. Version + structure_revision rejeitam stale/skipped deltas.
+
+Views:
+
+- WideBvh8View: 8-wide, 16-bin SAH/refit;
+- MortonBvh8View: deterministic 30-bit radix, 3×10-bit.
+
+Correctness: query equivalence contra oracle antes/depois; GCC/Clang/ASan+UBSan passaram no closeout R3.
+
+### 1M medians — referência CPU
+
+```text
+snapshot        40.986 ms
+SAH build     1782.978 ms
+Morton radix    55.231 ms
+publish 2%       0.924 ms
+SAH 2%          13.960 ms
+Morton 2%       51.575 ms
+publish 50%      2.516 ms
+SAH 50%       1664.696 ms
+Morton 50%      54.426 ms
+```
+
+Shared memory structural model ~66.0 MB vs duplicated ~106.0 MB, ~37.73% reduction. Isto é modelo estrutural, não RSS.
+
+### R3.1 Cost-Aware Fabric
+
+Compact catchup:
+
+```text
+snapshot copy median 3.508 ms
+background SAH       2969.335 ms
+compact catchup         9.041 ms
+```
+
+Background interference elevou active Morton update ~43.5%; unrestricted background work não foi promovido.
+
+Cost policy:
+
+```text
+predicted = update_ms + sampled_query_ms/sample_count * expected_queries
+```
+
+No family de AABB query testada, policy acertou winner subsequente 23/23 scenarios. Escopo limitado à família testada.
+
+### R3.2 Budgeted Scheduler
+
+Resumable/cooperative SAH state machine; manutenção recebe apenas slack.
+
+- 100k SAH promoveu ~92 frames com ~1 ms maintenance slices;
+- 250k ~292 frames;
+- 1M com Morton critical ~54.8 ms/frame → 80/80 frames sem slack, maintenance 0;
+- continuous dirty-refit queue substituiu batch catchup que podia starvation;
+- extreme 1M, 50% dirty/frame ×30: peak ~10.83M pending; após parar produção, backlog drenou em 181 slices nominal ~0.5 ms, final backlog 0 e query equivalence PASS.
+
+R3 `VERIFIED — CPU/reference`. Limite explícito: 1M mandatory Morton rebuild/frame permanece >16.67 ms na sandbox.
+
+---
+
+# PARTE III — R4 GEOMETRY KERNEL
+
+## 9. R4A Representation Contract
+
+Providers capability-oriented:
+
+- Bounds;
+- RaySurface;
+- SignedDistance.
+
+TriangleReference: Bounds/Ray. AnalyticSdf: todas.
+
+Cube: 12 triangles vs analytic box SDF, 882 ray hits equivalentes incluindo inside rays/non-normalized directions.
+
+200k rays reference timing: triangle brute-force ~17.5 ms, analytic SDF ~7.57 ms. Não interpretar como comparação de production triangle renderer.
+
+## 10. R4B Sparse Implicit
+
+Sparse narrow-band hierarchy com root sparse map → regions → upper/lower hierarchy → bricks; int16 quantized samples e error certificate.
+
+Caminhos rejeitados:
+
+- capped sphere tracing dependente de resolução;
+- naive hierarchical child testing pior.
+
+Caminho aceito: brick-level 3D DDA + local sphere tracing.
+
+100k rays ~138/135/145 ms em resoluções 1/32, 1/64, 1/128 no set testado.
+
+Sphere sparse vs dense-int16 storage:
+
+- 1/32: 96.9%;
+- 1/64: 55.3%;
+- 1/128: 31.7%.
+
+Box:
+
+- 1/32: 191.5%;
+- 1/64: 133.1%;
+- 1/128: 80.0%.
+
+Conclusão: sparse não é universalmente menor.
+
+## 11. R4C Clustered Triangle
+
+Adjacency-aware clusters, uint8 local indices, contiguous payload, BVH8.
+
+Per-cluster quantization abriu cracks no torus e foi rejeitada. Shared resource quantization frame foi promovido; BVH quantized bounds usam conservative one-unit outward padding.
+
+Cluster sweep 32/64/96/128/192/255. CPU experimental default 64 vertices / 124 triangles.
+
+~131k triangles, 5k rays: build ~71 ms, rays ~6.2 ms, quant storage ~1.46 MB.
+
+~524k triangles: source ~9.45 MB, quant ~6.11 MB, build ~369 ms, 5k rays ~12.5 ms.
+
+~2.10M triangles: source ~37.77 MB, quant ~23.31 MB, build ~1.28 s, 2k rays ~5.74 ms.
+
+## 12. R4D Selection
+
+Sem weighted magic score. Hard constraints + explicit objective + Pareto frontier.
+
+Sphere example:
+
+```text
+Sparse error   ~0.0135324
+Sparse storage ~2,842,910 B
+Cluster error  ~0.0192412
+Cluster storage ~46,288 B
+```
+
+Sparse ganhou ray latency nos workloads CPU testados; Clustered ganhou memória. Pareto contém ambos.
+
+Telemetry calibration separada do runtime; wrong revision/workload e duplicate ambiguity são rejeitados.
+
+## 13. R4E Online Telemetry
+
+Execution Kernel `observe_batch()` mede um batch real uma vez; Geometry interpreta por handle/revision/workload/device/batch-size class.
+
+Recent robust window usa median, MAD, P90 e cost. Outlier sample `1,1,1,1,1,1,50` preservou median=1 e P90=50.
+
+Always-on per-call microbatch timing foi falsificado por overhead; sampling por work volume/gap foi introduzido.
+
+## 14. R4F Safe Exploration
+
+Inactive provider improvement é impossível de detectar sem executar alternativa/shadow work ou aceitar ignorância.
+
+Exploration é opt-in, sem shadow duplicate work; batch real só pode ser roteado a alternativa que satisfaz hard constraints.
+
+Refresh-age sweep mostrou que age 1/2 com min_observed=3 pode entrar em ciclo quase permanente de exploration. Invariante: freshness horizon não deve ser menor que confidence sample requirement.
+
+Não existe refresh universal ótimo.
+
+R4A–F: `VERIFIED — CPU/reference` no escopo documentado.
+
+---
+
+# PARTE IV — R5 DEVICE REFERENCE ARCHITECTURE
+
+## 15. R5A Residency
+
+Reference backend semantics:
+
+- explicit budget;
+- LRU entre unpinned;
+- pinning;
+- immutable key/content;
+- generational handles;
+- key→slot hash lookup;
+- free-list reuse;
+- rollback/restoration após failed upload.
+
+Nenhuma alegação de VRAM real em R5A.
+
+## 16. R5B Geometry Device Packages
+
+Canonical `RepresentationArchive` little-endian, sem struct ABI/padding memcpy.
+
+Current small test package fingerprints:
+
+```text
+sparse bytes  44,422
+cluster bytes 356
+sparse fingerprint  14748051446487735809
+cluster fingerprint 2642998132373811531
+```
+
+Atomic `ensure_group`: validate → eviction plan → stage → publish; adversarial failure no terceiro upload depois de dois sucessos deixa 0/3 package resources residentes e restaura unrelated state/stats.
+
+## 17. R5C Device Work
+
+Reference planner digest:
+
+```text
+9229187388161744994
+```
+
+Representative planner scaling independent/write-chain, CPU reference:
+
+```text
+100       ~0.039 / 0.029 ms
+500       ~0.171 / 0.121 ms
+1,000     ~0.351 / 0.275 ms
+5,000     ~5.182 / 3.500 ms
+10,000    ~14.228 / 10.981 ms
+50,000    ~275.5 / 244.3 ms
+100,000   ~1.104 s / 923.7 ms
+```
+
+Conclusão: `DeviceWorkPacket` é coarse node; 100k host packets não é granularidade de produção aceitável.
+
+## 18. R5D Backend Translation
+
+Reference fingerprints:
+
+```text
+semantic digest                    2894648114337488996
+direct backend digest             1822164511422550589
+generated-sequence backend digest 14902490109153104665
+work-graph backend digest         9850775312450346422
+```
+
+Reference CPU translation medians, 7 runs:
+
+| packets | direct | indirect | generated-sequence | work-graph |
+|---:|---:|---:|---:|---:|
+| 100 | 0.088183 ms | 0.033841 | 0.031347 | 0.031297 |
+| 1.000 | 0.383327 | 0.356207 | 0.347003 | 0.316406 |
+| 5.000 | 1.953790 | 2.044830 | 1.890270 | 1.966190 |
+
+Essas colunas fazem quase o mesmo trabalho estrutural CPU/reference e **não** são comparação de Vulkan/D3D/GPU speed.
+
+Final R5D gate: GCC 17/17 PASS, Clang 17/17 PASS, no configured warnings; ASan+UBSan dedicated R5A-D tests passed.
+
+---
+
+# PARTE V — R5E HARDWARE RESULTS
+
+## 19. Hardware configuration
+
+```text
+GPU                 NVIDIA GeForce RTX 3070 Ti
+Vendor/Device       10DE:2482
+VRAM physical       8192 MiB
+NVIDIA driver       610.47
+Vulkan loader       1.4.357
+Vulkan device API   1.4.341
+Conformance         1.4.3.3
+Queue family used   2 (compute + transfer)
+```
+
+## 20. HW01 — Hardware Fingerprint
+
+Status: `VERIFIED — HARDWARE RESULT`.
+
+Feature bits reais confirmados incluem:
+
+- `bufferDeviceAddress`;
+- `timelineSemaphore`;
+- `descriptorIndexing`;
+- `synchronization2`;
+- `dynamicRendering`;
+- `descriptorBuffer`;
+- `descriptorHeap`;
+- `descriptorHeapCaptureReplay`;
+- `deviceGeneratedCommands`;
+- `dynamicGeneratedPipelineLayout`;
+- mesh/task shader;
+- acceleration structure / ray tracing pipeline.
+
+Capability presence não é performance claim.
+
+## 21. HW02 — Real Memory Roundtrip
+
+```text
+payload: 16,777,216 bytes
+input FNV-1a64:  0xc0dd6ba4a0e044c2
+output FNV-1a64: 0xc0dd6ba4a0e044c2
+memcmp: PASS
+validation errors: 0
+validation warnings: 0
+```
+
+Real `VkDevice`, host-visible buffers, device-local buffer, synchronization2 e readback foram exercitados.
+
+Memory budget foi capturado como telemetria dinâmica; não tratado como contabilidade exata das próprias alocações.
+
+## 22. HW03 — Direct Compute
+
+```text
+elements: 1,048,576 uint32
+local_size_x: 256
+workgroups_x: 4096
+operation: out[i] = in[i] * 3u + 7u
+input FNV-1a64: 0xac41f8629b52fce0
+CPU oracle:       0x8e2eef1faffc414f
+GPU output:       0x8e2eef1faffc414f
+full comparison: PASS
+validation errors: 0
+validation warnings: 0
+```
+
+Status: `VERIFIED — HARDWARE RESULT`.
+
+## 23. HW04 — Indirect Compute
+
+Evidence ZIP SHA-256:
+
+```text
+da327a30d50ebfcc90431d06cd14be585efb0d6b29cb16dadbe308a3eb1faa31
+```
+
+```text
+launch: vkCmdDispatchIndirect
+control source: resident device buffer
+VkDispatchIndirectCommand: {4096,1,1}
+control bytes: 12
+control FNV-1a64: 0x3891ae3c62606753
+CPU oracle:       0x8e2eef1faffc414f
+GPU output:       0x8e2eef1faffc414f
+full comparison: PASS
+validation errors: 0
+validation warnings: 0
+```
+
+Status: `VERIFIED — HARDWARE RESULT`.
+
+HW03 == HW04 == CPU oracle no workload testado. Nenhuma conclusão de performance Direct vs Indirect foi promovida.
+
+---
+
+# PARTE VI — REGRESSION GATE CONSOLIDADO
+
+## 24. CPU/reference regression antes do snapshot HW04
+
+Ambiente: Linux x86-64 sandbox, GCC 14.2, Release.
+
+```text
+ctest: 17/17 PASS
+failed: 0
+real test time: ~2.86 s
+```
+
+Tests:
+
+1. `kernel_tests`
+2. `r2_execution_tests`
+3. `r21_patch_tests`
+4. `r21_execution_patch_tests`
+5. `r3_snapshot_tests`
+6. `r3_fabric_tests`
+7. `r32_budgeted_spatial_tests`
+8. `r4_geometry_contract_tests`
+9. `r4_sparse_sdf_tests`
+10. `r4_clustered_triangle_tests`
+11. `aion_r4_geometry_fabric_tests`
+12. `aion_r4_online_geometry_telemetry_tests`
+13. `aion_r4_online_geometry_routing_tests`
+14. `aion_r5_device_tests`
+15. `aion_r5_geometry_device_tests`
+16. `aion_r5_device_work_tests`
+17. `aion_r5_backend_translation_tests`
+
+Compiler/sanitizer claims adicionais permanecem vinculados aos closeouts específicos; o gate acima não deve ampliar o escopo deles.
+
+---
+
+## 25. Non-claims atuais
+
+Ainda não verificado/medido até HW04:
+
+- Direct vs Indirect GPU execution performance;
+- CPU preparation/submit comparison;
+- DGC runtime/performance;
+- descriptor buffer/descriptor heap runtime comparison;
+- PCIe bandwidth characterization;
+- production residency/eviction behavior;
+- final synchronization/barrier policy;
+- integrated World → Spatial → Geometry → Device demonstrator;
+- universal cross-platform deterministic equivalence.

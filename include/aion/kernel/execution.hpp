@@ -137,6 +137,20 @@ private:
     std::size_t edge_count_{0};
 };
 
+
+enum class ExecutionDevice : std::uint8_t {
+    CpuReference = 0,
+    Gpu = 1,
+};
+
+struct BatchObservation {
+    ExecutionDevice device{ExecutionDevice::CpuReference};
+    std::uint64_t workload_id{};
+    std::size_t work_units{};
+    double wall_ms{};
+    double cpu_ms{};
+};
+
 enum class ExecutorKind : std::uint8_t {
     SerialReference,
     WorkerPool,
@@ -183,6 +197,45 @@ private:
     std::unique_ptr<Impl> impl_;
 };
 
+
+
+// Cooperative maintenance work is intentionally preemptible only at boundaries chosen by the job.
+// The scheduler grants wall-clock budget; the job must return between fine-grained quanta.
+struct CooperativeTaskProgress {
+    bool ok{true};
+    bool complete{false};
+    std::size_t work_units{};
+    std::string error;
+};
+
+using CooperativeTask = std::function<CooperativeTaskProgress(double budget_ms)>;
+
+struct MaintenanceBudget {
+    double frame_budget_ms{16.666666};
+    double critical_path_ms{};
+    double safety_margin_ms{1.0};
+    double max_maintenance_slice_ms{1.0};
+};
+
+struct MaintenanceRunResult {
+    bool ok{true};
+    bool ran{false};
+    bool complete{false};
+    double available_ms{};
+    double granted_ms{};
+    double actual_ms{};
+    double actual_cpu_ms{};
+    std::size_t work_units{};
+    std::string error;
+};
+
+class ExecutionBudgetScheduler final {
+public:
+    [[nodiscard]] static MaintenanceRunResult run_maintenance(
+        const MaintenanceBudget& budget,
+        const CooperativeTask& task);
+};
+
 class ExecutionKernel final {
 public:
     // Convenience one-shot executor. Prefer ExecutionRuntime for repeated frames so worker threads persist.
@@ -191,6 +244,14 @@ public:
         World& world,
         const ExecutionOptions& options = {},
         ChangeJournal* journal = nullptr);
+
+    // R4E generic one-shot observation primitive. The task is executed exactly once; the
+    // Execution Kernel records cost but remains unaware of GeometryHandle or provider semantics.
+    [[nodiscard]] static BatchObservation observe_batch(
+        ExecutionDevice device,
+        std::uint64_t workload_id,
+        std::size_t work_units,
+        const std::function<void()>& task);
 };
 
 } // namespace aion

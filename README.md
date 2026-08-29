@@ -1,189 +1,670 @@
-# D-SF — Engine Research Laboratory
+# D-SF — Experimental World / Geometry / Device Architecture
 
-> **Estado do repositório:** baseline auditável R0–R2.1.  
-> **Próxima pesquisa autorizada:** R3 — Spatial Kernel Bake-Off.  
-> **Contratos `FOUNDATIONAL`:** nenhum.
+> **Research-first engine architecture where authoritative world state is independent from visual geometry, physics representation and device/backend execution.**
 
-D-SF é um programa de pesquisa de engenharia para descobrir, por experimentos reproduzíveis, uma arquitetura de motor capaz de maximizar complexidade de mundo e qualidade perceptual por unidade de computação sem tornar o estado autoritativo dependente de uma única representação geométrica, renderer ou classe de processador.
+D-SF is an experimental engine research program. Its purpose is not to reproduce Unreal, Unity or another existing engine, and it does not assume that meshes, voxels, SDFs, GPU execution or any current API are inherently the correct foundation.
 
-Este repositório é a **fonte oficial única do projeto**. O código R0–R2.1 e os documentos canônicos abaixo foram consolidados a partir exclusivamente do histórico desta conversa e dos artefatos de laboratório produzidos nela. Nenhum outro repositório foi usado como fonte de verdade para este baseline.
+The project follows a stricter rule:
 
-## Fontes canônicas
-
-Para evitar documentos concorrentes, somente estes arquivos definem o estado do projeto:
-
-| Documento | Autoridade |
-|---|---|
-| [`README.md`](README.md) | Entrada, arquitetura resumida, estágio ativo e comandos básicos. |
-| [`docs/PROJECT.md`](docs/PROJECT.md) | Intenção original, missão, escopo, regras, roadmap, critérios de promoção e fechamento. |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitetura ativa, contratos verificados, invariantes e fronteiras entre núcleos. |
-| [`docs/RESEARCH_LEDGER.md`](docs/RESEARCH_LEDGER.md) | Registro cronológico completo das hipóteses, experimentos, correções, decisões e motivos. |
-| [`docs/VERIFICATION.md`](docs/VERIFICATION.md) | Evidências reproduzíveis, hashes, benchmarks, ambiente, sanitizers e limitações. |
-
-Relatórios antigos separados de R0/R1/R2/R2.1 não são mantidos como documentos ativos porque duplicariam verdades. Seu conteúdo comprovado foi incorporado ao ledger e ao documento de verificação.
-
-## Regra de evidência
-
-Nenhuma afirmação entra como fato arquitetural somente porque parece plausível. O projeto distingue explicitamente:
-
-- `IDEA`: possibilidade ainda não formulada como teste;
-- `HYPOTHESIS`: proposição falsificável e ainda não comprovada;
-- `EXPERIMENTAL`: existe implementação de laboratório, ainda livre para mudar;
-- `VERIFIED`: passou pelos testes definidos, no escopo explicitamente declarado;
-- `FOUNDATIONAL`: contrato versionado que sobreviveu a validação multiplataforma e estresse arquitetural suficiente para ser tratado como fundação estável.
-
-`VERIFIED` nunca significa “universalmente verdadeiro”. Nenhum contrato chegou a `FOUNDATIONAL` até este baseline.
-
-## Arquitetura atual
-
-O diagrama diferencia a parte já demonstrada em R0–R2.1 das próximas camadas de pesquisa.
-
-```mermaid
-flowchart TD
-    subgraph V[VERIFICADO NO ESCOPO DE REFERÊNCIA — R0 a R2.1]
-        W0[Authoritative World State]
-        S[Immutable pre-wave view]
-        DAG[Execution Kernel\nread/write dependency DAG]
-        SYS[Parallel systems\nprivate computation]
-        PATCH[Private patches\nscalar + typed ranges]
-        MERGE[Canonical merge\nSystemId order]
-        TX[Hybrid Transaction\none TransactionId]
-        VALIDATE[Full validation\nno silent precedence]
-        JOURNAL[PatchJournal\nforward history + ephemeral undo]
-        W1[New Authoritative World State]
-        HASH[Canonical SHA-256]
-
-        W0 --> S --> DAG --> SYS --> PATCH --> MERGE --> TX --> VALIDATE --> JOURNAL --> W1
-        W1 --> HASH
-        JOURNAL -->|replay / rollback| W0
-    end
-
-    subgraph N[PRÓXIMAS HIPÓTESES — NÃO PROMOVIDAS]
-        SPACE[R3 Spatial Kernel\ngrid / hash grid / BVH / sparse hierarchy / octree]
-        GEOM[R4 Geometry Kernel\nmesh / SDF / voxel / splat / future neural providers]
-        GPU[R5 GPU Laboratory\ncompute / residency / indirect execution / GPU patches]
-        HET[R6 Heterogeneous World\nadaptive representation + derived views]
-        RENDER[Derived Render View]
-        PHYS[Derived Physics View]
-    end
-
-    W1 -. authoritative spatial data .-> SPACE
-    SPACE -. provider selection .-> GEOM
-    DAG -. future placement .-> GPU
-    GEOM -. integrated world .-> HET
-    HET -. derived only .-> RENDER
-    HET -. derived only .-> PHYS
+```text
+Theory / Hypothesis
+        ↓
+Reference / Oracle
+        ↓
+Controlled Experiment
+        ↓
+Evidence
+        ↓
+Conclusion
+        ↓
+Specification / Promotion / Rejection
 ```
 
-### Regra central
+A mechanism is promoted only after the evidence supports it. Attractive ideas that fail are retained as research results rather than hidden.
 
-**A representação visual não é a verdade do mundo.** O estado autoritativo deve continuar válido mesmo que renderer, geometria visual, física ou backend de execução sejam substituídos.
+---
 
-### Fronteira de autoridade atual
+## 1. Core Thesis
+
+The central architectural hypothesis is:
+
+> **Authoritative world state must not be defined by visual geometry, renderer, physics backend or processor architecture. Those systems should consume derived representations of a more fundamental semantic/spatial state.**
+
+The current separation is:
+
+```text
+World != Geometry != Device Package != Device Work != Backend Command Model
+```
+
+And another permanent rule is:
+
+```text
+VisualGeometry != PhysicalGeometry
+```
+
+The renderer is not the world. Physics is not the world. A triangle mesh is not the identity of an object. Vulkan is not the engine contract.
+
+---
+
+## 2. Research Principles
+
+D-SF is developed under the following rules:
+
+1. **Reference before optimization.** Optimized paths must be compared against a simpler authoritative oracle whenever semantic equivalence is expected.
+2. **Correctness before performance.** A faster incorrect path has failed.
+3. **No favorite technology.** Techniques are selected by evidence for a workload, not by popularity, novelty or familiarity.
+4. **AI proposes; Kernel validates.** AI can generate hypotheses, designs and implementation candidates, but deterministic validation decides promotion.
+5. **Hardware claims require hardware evidence.** CPU/reference measurements are never reported as GPU performance.
+6. **A benchmark must describe the work it actually performs.** One million lightweight state records are not called one million complete NPCs.
+7. **Failures are evidence.** Falsified approaches remain part of the research history.
+8. **Contracts may stabilize; implementations remain replaceable.** A winning implementation is not automatically a permanent architectural dependency.
+9. **System-level economics matter.** Local wins that increase memory, bandwidth, latency or integration complexity elsewhere may be rejected.
+
+A useful conceptual objective is:
+
+```text
+(capacity + quality + scale)
+----------------------------
+(time + memory + bandwidth + complexity)
+```
+
+This is a design lens, not a single benchmark score.
+
+---
+
+## 3. Evidence Classes
+
+Every relevant result must use an explicit evidence class.
+
+| Class | Meaning |
+|---|---|
+| **REFERENCE RESULT** | Semantics or measurements validated in the CPU/reference research environment. |
+| **HARDWARE RESULT** | Actually executed and verified/measured on identified target hardware. |
+| **PARTIAL** | Useful evidence exists, but important scope remains unresolved. |
+| **FALSIFIED** | A tested hypothesis/path failed in the stated scope and is not promoted. |
+| **NOT MEASURED** | No performance or cost claim is permitted. |
+
+`VERIFIED` always has a scope. As of R5E-HW04, **no D-SF contract is classified as `FOUNDATIONAL`**.
+
+---
+
+## 4. Architecture
 
 ```text
 Authoritative World
-       │
-       ▼ immutable snapshot
-Execution DAG
-       │
-       ▼ parallel computation
-Private system patches
-       │
-       ├── scalar writes: estrutura e mudanças esparsas
-       └── typed ranges: mudanças agrupadas ou densas
-       │
-       ▼
-Hybrid Transaction
-       │
-       ▼ validate + canonical publish
-New Authoritative World
+    |
+    +--> Hybrid Transactions / Change Journal
+    |
+    +--> Execution Kernel
+    |      +--> declared reads / writes / dependencies
+    |      +--> deterministic waves
+    |      +--> private worker patches
+    |      +--> atomic authoritative commit
+    |
+    +--> Shared Spatial Snapshot
+    |      +--> Wide BVH8
+    |      +--> Morton BVH8
+    |      +--> cost-aware spatial policy
+    |      +--> budgeted maintenance
+    |
+    +--> GeometrySet
+    |      +--> Clustered Triangle
+    |      +--> Analytic / Sparse SDF
+    |      +--> capabilities
+    |      +--> revision
+    |      +--> geometric error
+    |      +--> telemetry / routing
+    |
+    +--> Device Geometry Packages
+           |
+           +--> Residency Contract
+           |
+           +--> DeviceWorkPacket DAG
+                  |
+                  +--> Backend-neutral Translation
+                         |
+                         +--> Direct
+                         +--> Indirect
+                         +--> Device Generated candidates
+                                |
+                                +--> Real Vulkan Hardware Gates
 ```
 
-Workers podem calcular propostas em paralelo. **Workers não possuem autoridade para mutar o `World` diretamente.**
+The active architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Estado das etapas
+---
 
-| Etapa | Estado | Resultado principal |
+## 5. Verified Research State
+
+| Stage | Status | Scope / Result |
 |---|---|---|
-| R0 — Minimal Authoritative World | `VERIFIED` — reference scope | Estado autoritativo mínimo, identidade estável, transações validadas e baseline CPU. |
-| R1 — Journal / Hash / Replay / Rollback | `VERIFIED` — same-architecture reference scope | Um `World` novo reproduz o mesmo SHA-256 apenas com o journal ordenado; rollback retorna a hashes históricos exatos. |
-| R2 — Dependency Execution Graph | `VERIFIED` — correctness scope; performance `PARTIAL` | Dependências `read/write` geram waves seguras; serial e worker pool convergem ao mesmo hash. |
-| R2.1 — Hybrid Transaction Patches | `VERIFIED` — correctness + tested-performance scope | Scalar + ranges preservam a autoridade e eliminam grande parte do overhead de milhões de `Mutation` em workloads densos. |
-| R3 — Spatial Kernel Bake-Off | `HYPOTHESIS / NEXT` | Comparar estruturas espaciais sob a mesma API e workloads, sem escolher vencedora antecipadamente. |
+| R0 | **VERIFIED** | Minimal authoritative world reference |
+| R1 | **VERIFIED** | Journal, canonical hash, replay and rollback |
+| R2 | **VERIFIED / PARTIAL PERF** | Dependency execution graph correctness |
+| R2.1 | **VERIFIED** | Hybrid scalar/range transaction patches |
+| R3 / R3.1 / R3.2 | **VERIFIED** | Shared spatial snapshot, cost-aware fabric and budgeted maintenance — CPU/reference |
+| R4A–R4F | **VERIFIED** | Geometry contract, Sparse SDF, clustered triangles, selection, telemetry and safe exploration — CPU/reference |
+| R5A | **VERIFIED** | Device residency contract — reference backend |
+| R5B | **VERIFIED** | Geometry device packages + atomic residency — reference backend |
+| R5C | **VERIFIED** | Device work contract/planner — CPU/reference |
+| R5D | **VERIFIED** | Backend capability + translation semantics — CPU/reference |
+| R5E-HW01 | **VERIFIED** | Real Vulkan hardware/capability fingerprint |
+| R5E-HW02 | **VERIFIED** | Real `VkDevice` + `VkDeviceMemory` roundtrip |
+| R5E-HW03 | **VERIFIED** | Real Direct compute vs exact CPU oracle |
+| R5E-HW04 | **VERIFIED** | Real Indirect compute vs exact CPU oracle |
+| R5E-HW05 | **NEXT** | GPU timestamp characterization: Direct vs Indirect |
 
-## Resultado integrado mais forte até agora
+The project roadmap and promotion rules are maintained in [`docs/PROJECT.md`](docs/PROJECT.md).
 
-No workload R2.1 de **1.000.000 de entidades, 4 sistemas, 2 waves e 3 frames**, todos os candidatos produziram o mesmo estado final. A mediana observada no ambiente compartilhado da sandbox foi:
+---
 
-| Caminho | Mediana | Speedup vs R2 scalar serial |
-|---|---:|---:|
-| R2 scalar serial | 740.970 ms | 1.000× |
-| R2 scalar / 4 workers | 517.654 ms | 1.431× |
-| R2.1 ranges serial | 228.456 ms | 3.243× |
-| R2.1 ranges / 4 workers | 166.262 ms | 4.457× |
-| R2.1 ranges / 4 workers + persistent parallel commit | 150.455 ms | 4.925× |
+## 6. Current Hardware Evidence
 
-SHA-256 final do cenário:
+Current hardware target used by R5E:
 
 ```text
-61d624a0af70729626dafebd3b3bea4cb5a074e625ec7f17ac981f6eef5a2c60
+GPU                 NVIDIA GeForce RTX 3070 Ti
+Vendor / Device     10DE:2482
+Physical VRAM       8192 MiB
+NVIDIA Driver       610.47
+Vulkan Loader       1.4.357
+Vulkan Device API   1.4.341
+Compute Queue       family 2
 ```
 
-Esses valores são **evidência do workload nomeado**, não uma afirmação de desempenho de jogo completo e não são evidência de GPU.
+### HW01 — Capability Fingerprint
 
-## Build de referência
+Real Vulkan feature discovery confirmed, among other capabilities:
 
-Requisitos já usados no laboratório:
+- `bufferDeviceAddress`;
+- `synchronization2`;
+- timeline semaphore;
+- descriptor indexing;
+- descriptor buffer;
+- `VK_EXT_descriptor_heap` feature bits;
+- `VK_EXT_device_generated_commands` feature bits;
+- mesh shader;
+- ray tracing capabilities.
 
-- CMake 3.31.x no ambiente registrado;
-- GCC 14.2 e Clang 17;
-- C++23;
-- Linux x86-64 para as verificações atuais.
+Capability presence is **not** a performance result.
 
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-ctest --test-dir build --output-on-failure
+### HW02 — Real Memory Roundtrip
+
+```text
+16 MiB HOST
+      ↓
+DEVICE_LOCAL
+      ↓
+16 MiB HOST READBACK
 ```
 
-Executáveis de laboratório atuais:
+Result:
 
-```bash
-./build/aion_lab
-./build/aion_bench 1000000 120
-./build/aion_r1_bench 256 5000
-./build/aion_r2_tests
-./build/aion_r2_bench
-./build/aion_r21_tests
-./build/aion_r21_execution_tests
-./build/aion_r21_bench
-./build/aion_r21_sparse_bench
-./build/aion_r21_execution_bench
+```text
+Input  FNV-1a64: 0xc0dd6ba4a0e044c2
+Output FNV-1a64: 0xc0dd6ba4a0e044c2
+Full byte comparison: PASS
+Validation errors:   0
+Validation warnings: 0
 ```
 
-O namespace/binários ainda usam o nome interno `aion`, herdado dos artefatos experimentais R0–R2.1. Isso **não é** um contrato arquitetural nem uma decisão definitiva de naming; o baseline preserva o código testado para não introduzir mudança cosmética dentro de uma importação de evidência.
+### HW03 — Direct Compute
 
-## Limites atuais
+Workload:
 
-Ainda não foi comprovado:
+```text
+1,048,576 uint32
+local_size_x = 256
+workgroups_x = 4096
+out[i] = in[i] * 3u + 7u
+```
 
-- determinismo bit a bit Windows ↔ Linux;
-- x86-64 ↔ ARM;
-- execução autoritativa CPU ↔ GPU;
-- desempenho real em Vulkan/DX12/GPU;
-- política final de floating-point determinism;
-- hashing incremental/Merkle em escala;
-- rollback comprimido/bounded em escala;
-- crash-safe journal recovery;
-- estrutura espacial vencedora;
-- Geometry Kernel heterogêneo;
-- renderer ou physics view de produção.
+```text
+CPU oracle: 0x8e2eef1faffc414f
+GPU output: 0x8e2eef1faffc414f
+Full element comparison: PASS
+Validation errors:   0
+Validation warnings: 0
+```
 
-A sandbox utilizada até R2.1 não expôs uma GPU de produção/Vulkan adequada para medições reais. Números de GPU não serão inferidos ou fabricados.
+### HW04 — Indirect Compute
 
-## Próximo gate
+The same workload was executed with a device-resident indirect launch-control resource:
 
-R3 só pode promover uma estrutura espacial depois de comparar candidatos sob a mesma interface, conjunto de workloads e critérios de correção. Nenhuma preferência por octree, BVH, grid, sparse bricks ou combinação será tratada como resultado antes dos testes.
+```text
+VkDispatchIndirectCommand {4096, 1, 1}
+control bytes: 12
+launch: vkCmdDispatchIndirect
+```
 
-Leia [`docs/PROJECT.md`](docs/PROJECT.md) antes de qualquer alteração arquitetural e registre qualquer nova decisão comprovada em [`docs/RESEARCH_LEDGER.md`](docs/RESEARCH_LEDGER.md).
+```text
+CPU oracle: 0x8e2eef1faffc414f
+GPU output: 0x8e2eef1faffc414f
+Full element comparison: PASS
+Validation errors:   0
+Validation warnings: 0
+```
+
+This demonstrates **functional equivalence in the tested workload** between the Direct and Indirect paths. It does **not** establish performance equivalence or superiority.
+
+---
+
+## 7. How Development Must Proceed
+
+D-SF development is intentionally split into two environments:
+
+```text
+LOCAL / SANDBOX
+    research
+    hypotheses
+    implementations
+    experiments
+    falsifications
+    reference tests
+           ↓
+VERIFIED MILESTONE
+           ↓
+GITHUB
+    consolidated source snapshot
+    canonical documentation
+    closeout
+    evidence summaries / fingerprints
+```
+
+GitHub is the **official record of consolidated verified milestones**, not the live experimental laboratory.
+
+A future stage must not be advanced only because the previous executable returned `0`. The required sequence is:
+
+```text
+1. State the hypothesis
+2. Define the oracle / expected semantics
+3. Define acceptance and rejection conditions
+4. Freeze the variables that must remain constant
+5. Change one architectural variable when possible
+6. Execute the gate
+7. Generate an evidence package
+8. Validate evidence integrity
+9. Analyze correctness before performance
+10. Record limitations and non-claims
+11. Update canonical state
+12. Promote to GitHub only after the milestone is coherent
+```
+
+When comparing two mechanisms, D-SF tries to preserve the same workload, data, shader/program, binding model and oracle so that the changed variable is identifiable.
+
+Example:
+
+```text
+HW03 Direct
+vs
+HW04 Indirect
+
+same input
+same shader
+same binding baseline
+same element count
+same CPU oracle
+
+only launch mechanism changes
+```
+
+---
+
+## 8. Hardware Gate Delivery Protocol
+
+Hardware experiments are distributed as self-contained gates rather than asking the operator to manually reproduce dozens of commands.
+
+A typical package follows this structure:
+
+```text
+R5E_HWxx_GATE/
+├── README.md
+├── HWxx_ACCEPTANCE.md
+├── RUN_R5E_HWxx.cmd
+├── scripts/
+│   └── Run-R5E-HWxx.ps1
+├── src/
+│   └── probe_or_test.cpp
+├── shaders/
+│   └── workload.comp          # when applicable
+└── baseline / expected state
+```
+
+The gate must be designed so that both **PASS and FAIL are useful results**. A failure package should contain enough diagnostics to determine whether the failure occurred in:
+
+```text
+prerequisite discovery
+→ toolchain
+→ shader compilation
+→ native compilation
+→ native link
+→ Vulkan instance/device
+→ allocation/upload
+→ command recording
+→ synchronization
+→ execution
+→ readback
+→ oracle comparison
+→ validation
+```
+
+Runner/toolchain failures are not mislabeled as negative GPU results.
+
+---
+
+## 9. How Evidence Is Generated
+
+Each hardware gate creates a timestamped evidence directory, for example:
+
+```text
+evidence/
+└── R5E_HW04_YYYYMMDD-HHMMSS/
+```
+
+Depending on the gate, the directory may contain:
+
+```text
+run_manifest.json
+hardware / driver snapshot
+Vulkan capability snapshot
+compiler discovery
+shader compile stdout / stderr
+C++ compile stdout / stderr
+link stdout / stderr
+probe stdout / stderr
+validation log
+input / expected / output fingerprints
+launch-control data
+memory telemetry
+source / shader hashes
+command exit codes
+acceptance result
+```
+
+The runner then generates a ZIP and an external SHA-256:
+
+```text
+R5E_HW04_EVIDENCE_YYYYMMDD-HHMMSS.zip
+R5E_HW04_EVIDENCE_YYYYMMDD-HHMMSS.zip.sha256
+```
+
+The operator returns **both files** for analysis.
+
+### Evidence integrity validation
+
+Before interpreting the result, the evidence is checked in this order:
+
+```text
+1. Compute SHA-256 of received ZIP
+2. Compare with external .sha256
+3. Extract into a clean directory
+4. Verify internal file hashes / manifest
+5. Confirm expected source/shader identity
+6. Inspect command exit codes
+7. Inspect validation output
+8. Inspect oracle comparison
+9. Only then classify PASS / FAIL / PARTIAL
+```
+
+A corrupted or incomplete evidence package cannot promote a stage.
+
+---
+
+## 10. Acceptance Rules
+
+A correctness gate normally requires all relevant conditions to pass, for example:
+
+```text
+source identity          PASS
+shader build             PASS
+C++ compilation          PASS
+native link              PASS
+VkDevice creation        PASS
+required feature enable  PASS
+command execution        PASS
+readback                 PASS
+CPU oracle comparison    PASS
+validation errors        0
+validation warnings      0
+```
+
+A performance gate adds stronger requirements:
+
+- correctness gate must already be green;
+- warm-up behavior must be defined;
+- GPU timestamps must be used for GPU execution claims;
+- CPU preparation, submit and synchronization should be measured separately where relevant;
+- repeated runs must be preserved, not only the best run;
+- medians and tail behavior such as P90/P95 are preferred over one-shot numbers;
+- workload, hardware and driver identity must remain recorded;
+- a performance winner is valid only for the measured workload/scope.
+
+---
+
+## 11. Evidence Promotion and Closeout
+
+After a gate passes, the result is **not immediately promoted by description alone**.
+
+The closeout process is:
+
+```text
+Evidence ZIP
+   ↓
+Integrity verification
+   ↓
+Technical analysis
+   ↓
+Result classification
+   ↓
+Closeout report
+   ↓
+Structured current state
+   ↓
+Regression gate
+   ↓
+GitHub milestone snapshot
+```
+
+Typical promoted artifacts include:
+
+```text
+docs/R5E_HWxx_CLOSEOUT.md
+docs/R5E_HWxx_CLOSEOUT.json
+docs/R5E_CURRENT_STATE.json
+docs/RESEARCH_LEDGER.md
+docs/VERIFICATION.md
+docs/ARCHITECTURE.md       # if architecture changed
+docs/PROJECT.md            # if roadmap/governance changed
+README.md                   # summarized active state
+```
+
+Raw evidence does not need to be dumped indiscriminately into the repository. The repository must preserve enough hashes, fingerprints, environment identity and conclusions to audit the promoted result while avoiding unnecessary binary/log noise.
+
+### Immutable historical baselines
+
+When a canonical document is significantly restructured, its prior verified version must not disappear. Exact historical snapshots are preserved under:
+
+```text
+docs/history/<milestone>/
+```
+
+The R2.1 canonical snapshot is preserved byte-for-byte in:
+
+```text
+docs/history/R2_1/README.md
+docs/history/R2_1/PROJECT.md
+docs/history/R2_1/ARCHITECTURE.md
+docs/history/R2_1/RESEARCH_LEDGER.md
+docs/history/R2_1/VERIFICATION.md
+```
+
+This rule exists specifically to prevent a future documentation update from silently replacing detailed audit history with a summary.
+
+---
+
+## 12. Regression Before Promotion
+
+Before a consolidated source milestone is published, the CPU/reference regression suite must be rerun from a clean build.
+
+The consolidated R3–R5D reference state used before the HW04 documentation promotion produced:
+
+```text
+17 / 17 tests PASS
+0 failed
+```
+
+Compiler/sanitizer claims are kept scoped to the specific closeout where they were actually executed.
+
+A later stage is not allowed to silently invalidate a previously promoted invariant. If it does, that is a regression and must be recorded explicitly.
+
+---
+
+## 13. Current Next Step — R5E-HW05
+
+The next authorized experiment is:
+
+> **GPU Timestamp & Direct/Indirect Characterization**
+
+HW05 must keep the HW03/HW04 workload semantically equivalent while adding measurement rather than changing architecture unnecessarily.
+
+The intended comparison is:
+
+```text
+same input
+same output oracle
+same compute operation
+same element count
+same baseline binding model
+same target GPU
+
+Direct launch
+vs
+Indirect launch
+```
+
+Measurements should separate at least:
+
+```text
+CPU preparation
+CPU command recording / submit
+GPU execution timestamp
+CPU/GPU synchronization
+```
+
+The experiment should also distinguish cold/warm effects where relevant and use repeated samples rather than a single timing.
+
+Only after HW05 may the project make an evidence-based statement about the cost difference between Direct and Indirect for this workload.
+
+### After HW05
+
+Planned order, subject to evidence:
+
+```text
+HW05  Direct vs Indirect timestamps / characterization
+  ↓
+HW06  synchronization/barrier characterization as required
+  ↓
+HW07  Device Generated Commands bring-up
+  ↓
+HW08  DGC comparison under controlled workloads
+  ↓
+HW09  descriptor binding candidates
+      baseline sets vs descriptor buffer / descriptor heap
+  ↓
+R5E closeout
+  ↓
+R5F device architecture conclusions, if required
+  ↓
+R6 integrated heterogeneous demonstrator
+```
+
+This order is not ideological. A newer API is never promoted simply because it is newer. If Direct or Indirect remains superior for a workload, the data decides.
+
+---
+
+## 14. What Is Not Yet Claimed
+
+As of R5E-HW04, D-SF does **not** claim:
+
+- Direct is faster than Indirect;
+- Indirect is faster than Direct;
+- DGC is faster or preferable;
+- descriptor heap/buffer is the final binding model;
+- current reference barriers are the final hardware synchronization policy;
+- Sparse SDF is universally superior to clustered triangles;
+- GPU paths have solved the 1M-object spatial update problem;
+- the architecture is production-ready;
+- D-SF is competitive with general-purpose commercial engines as a complete product.
+
+Those claims require their own evidence.
+
+---
+
+## 15. Repository Guide
+
+```text
+docs/PROJECT.md
+    mission, governance, roadmap and closure criteria
+
+docs/ARCHITECTURE.md
+    active contracts and architecture
+
+docs/RESEARCH_LEDGER.md
+    research decisions, promoted and falsified paths
+
+docs/VERIFICATION.md
+    fingerprints, environments and verification index
+
+docs/history/R2_1/
+    immutable byte-for-byte copy of the R2.1 canonical documentation
+
+docs/R5E_CURRENT_STATE.json
+    machine-readable active R5E state
+
+docs/R5E_HARDWARE_BRINGUP.md
+    hardware bring-up summary
+
+docs/R5E_HW04_CLOSEOUT.md
+    latest closed hardware gate
+
+include/ + src/
+    promoted reference implementation snapshot
+
+tests/
+    permanent regression tests for promoted properties
+
+bench/
+    reference benchmarks / characterization programs
+
+results/
+    selected structured results suitable for repository tracking
+```
+
+---
+
+## 16. Status Summary
+
+```text
+R0      ✓
+R1      ✓
+R2      ✓ correctness / partial performance
+R2.1    ✓
+R3      ✓ CPU/reference
+R4      ✓ CPU/reference
+R5A     ✓ reference
+R5B     ✓ reference
+R5C     ✓ CPU/reference
+R5D     ✓ CPU/reference translation
+
+R5E-HW01  ✓ real hardware fingerprint
+R5E-HW02  ✓ real Vulkan memory roundtrip
+R5E-HW03  ✓ real Direct compute
+R5E-HW04  ✓ real Indirect compute
+R5E-HW05  → next: measured Direct vs Indirect
+
+R6        planned: integrated demonstrator
+```
+
+The research remains active. The rule for every next step is unchanged:
+
+> **Do not promote what has not been demonstrated. Do not hide what the data falsifies.**

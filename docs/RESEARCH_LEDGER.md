@@ -2,35 +2,19 @@
 
 ## 0. Função e regras deste ledger
 
-Este é o registro cronológico canônico da pesquisa D-SF até o baseline R2.1 e de todas as decisões que levaram a ele.
+Este é o registro cronológico canônico da pesquisa D-SF. Ele preserva a origem do projeto, hipóteses, decisões, evidências, falsificações e mudanças de roadmap.
 
-### Origem permitida para este baseline
+O ledger não é apagado quando a arquitetura muda. Novas entradas **supersedem** decisões antigas quando necessário, mas não reescrevem silenciosamente o passado.
 
-O conteúdo abaixo usa exclusivamente:
+### Origem permitida para o baseline inicial
+
+O baseline R0–R2.1 foi reconstruído usando exclusivamente:
 
 1. mensagens desta conversa;
 2. código e relatórios de sandbox produzidos nesta conversa;
 3. resultados de compilação/testes/benchmarks executados durante esta conversa.
 
-Nenhum histórico de outro repositório foi usado para reconstruir o passado do D-SF.
-
-### O que este ledger preserva
-
-- intenção inicial;
-- tecnologias consideradas;
-- o que foi considerado real, exagerado ou não comprovado;
-- arquitetura proposta antes de existir código;
-- limitações reais da sandbox;
-- cada fase implementada R0, R1, R2 e R2.1;
-- falhas arquiteturais encontradas;
-- benchmarks intermediários e finais;
-- hashes de verificação;
-- razões de mudança de roadmap;
-- hipóteses rejeitadas ou limitadas;
-- limitações que permanecem abertas;
-- mandato de centralização no repositório D-SF.
-
-O ledger não é apagado quando a arquitetura muda. Novas entradas devem **superseder**, não reescrever silenciosamente, decisões antigas.
+Nenhum histórico de outro repositório foi usado para reconstruir aquele passado.
 
 ---
 
@@ -144,7 +128,7 @@ Decisão conceitual inicial:
 
 **Razão:** meshes, SDF, voxels, splats e futuros métodos possuem perfis de vantagem diferentes.
 
-**Estado:** `HYPOTHESIS`, não comprovado até R2.1.
+**Estado naquele momento:** `HYPOTHESIS`.
 
 ---
 
@@ -206,7 +190,7 @@ Um mesmo objeto poderia futuramente usar:
 - splat distante;
 - voxel/volume para GI.
 
-**Estado até R2.1:** apenas direção arquitetural; Geometry Kernel ainda não existe.
+**Estado até R2.1:** direção arquitetural; Geometry Kernel ainda não existia.
 
 ---
 
@@ -217,8 +201,6 @@ Um mesmo objeto poderia futuramente usar:
 Antes do LAB-0, a conversa propôs um `World Kernel` mínimo com cinco responsabilidades pesquisáveis.
 
 ### State Kernel
-
-Responsabilidade proposta:
 
 - verdade lógica do mundo;
 - estado como `health`, `locked`, `closed` etc.;
@@ -232,7 +214,7 @@ Hipótese proposta:
 - experimentar `Hierarchical Sparse Space` ou estruturas similares;
 - separar organização espacial de hierarquia lógica.
 
-Essa hipótese foi deliberadamente adiada até R3.
+Adiada até R3.
 
 ### Memory Kernel
 
@@ -260,30 +242,28 @@ Nenhum Memory Kernel foi implementado até R2.1.
 
 ### Execution Kernel
 
-Hipótese proposta:
+Hipótese:
 
 - sistema declara `reads`, `writes`, constraints;
-- scheduler decide ordem e paralelismo;
+- scheduler decide ordem/paralelismo;
 - CPU/GPU placement deve ser implementação onde possível.
 
-Essa hipótese tornou-se R2 e foi parcialmente comprovada para CPU worker pool.
+Virou R2 e foi parcialmente comprovada para CPU worker pool.
 
 ### Change Kernel
 
-Hipótese proposta:
+Hipótese:
 
-- alterações autoritativas como transações;
-- possível infraestrutura comum para undo/redo, replay, replication, save, rollback e debug temporal.
+- mudanças autoritativas como transactions;
+- infraestrutura compartilhável para undo/redo, replay, replication, save, rollback e debug temporal.
 
-R0/R1 comprovaram parte da hipótese: transação, journal, replay e rollback no escopo de referência.
-
-Networking/editor undo ainda não foram comprovados.
+R0/R1 comprovaram transaction, journal, replay e rollback no escopo de referência. Networking/editor undo permaneceram abertos.
 
 ---
 
 ## L-004 — Geometry Kernel conceitual
 
-Foi proposto um contrato futuro:
+Contrato futuro proposto:
 
 ```text
 GeometryProvider
@@ -296,23 +276,13 @@ GeometryProvider
 └── NeuralProvider
 ```
 
-Foi discutido que as capacidades de cada provider seriam diferentes, por exemplo:
-
-- Mesh: render/animação fortes;
-- SDF: CSG/destruição fortes;
-- Voxel: matéria/volume fortes;
-- Gaussian: visual/captura forte, física difícil;
-- Neural: experimental.
-
-Nenhum `GeometryProvider` foi implementado até R2.1.
+Capacidades seriam diferentes por provider. Nenhum `GeometryProvider` existia até R2.1.
 
 ---
 
 ## L-005 — Renderer heterogêneo conceitual
 
-A conversa propôs um renderer que recebesse uma `RenderView`, não entities diretamente.
-
-Caminho conceitual:
+Renderer deveria receber `RenderView`, não entities diretamente:
 
 ```text
 World
@@ -322,16 +292,9 @@ World
 → GPU command graph
 ```
 
-Um frame poderia futuramente combinar:
+Um frame poderia combinar rasterization, ray tracing, raymarching, Gaussian splatting, volume rendering e neural reconstruction.
 
-- rasterization;
-- ray tracing;
-- raymarching;
-- Gaussian splatting;
-- volume rendering;
-- neural reconstruction.
-
-Foi proposta a ideia de convergir diferentes origens para um `Surface Buffer` comum:
+Foi proposta convergência para um `Surface Buffer` comum:
 
 ```text
 position
@@ -342,50 +305,40 @@ velocity
 semantic ID
 ```
 
-Isso permaneceu hipótese.
+Permaneceu hipótese.
 
 ---
 
 ## L-006 — Física como derived view
 
-Foi registrada a separação:
+Regra registrada:
 
 ```text
 VisualGeometry != PhysicalGeometry
 ```
 
-Exemplos conceituais:
+Exemplos:
 
 - Gaussian visual + SDF physical proxy;
 - detailed mesh visual + convex hull physical;
 - destructible voxel visual + coarse volume physical.
 
-Nenhum Physics View production foi implementado até R2.1.
+Nenhum Physics View production existia até R2.1.
 
 ---
 
 ## L-007 — Política de IA
-
-Regra proposta:
 
 ```text
 AI proposes.
 Kernel validates.
 ```
 
-Exemplos:
-
-- modelo propõe destino; navigation/physics valida;
-- neural model propõe geometria; Geometry Kernel converte/valida;
-- modelo não se torna autoridade apenas porque gera aparência plausível.
-
-Essa regra permanece princípio de pesquisa, não implementação até R2.1.
+Modelo pode propor destino/geometria, mas navigation/physics/Geometry Kernel valida. IA não vira autoridade apenas por gerar aparência plausível.
 
 ---
 
 ## L-008 — Método do laboratório
-
-Foi definido que cada pesquisa teria:
 
 ```text
 Theory
@@ -403,37 +356,17 @@ PARTIAL
 FAIL
 ```
 
-Uma ideia deveria poder morrer mesmo se fosse originalmente defendida.
-
-Exemplo explícito discutido:
-
-```text
-GPU ECS = 5.9 ms
-CPU ECS = 2.1 ms
-→ GPU ECS perdeu naquele workload
-```
-
-Nenhum benchmark seria manipulado para salvar uma preferência arquitetural.
+Uma ideia deveria poder morrer mesmo se inicialmente defendida.
 
 ### D-003 — Oracle/reference implementation
 
-Para cada kernel importante, manter um caminho simples e correto, mesmo que lento.
+Para cada kernel importante, manter caminho simples/correto contra o qual optimized path possa ser comparado.
 
-Objetivo:
-
-```text
-optimized implementation
-vs
-reference implementation
-```
-
-Essa decisão foi implementada em R2/R2.1 como serial/per-entity oracle contra caminhos paralelos/range.
+Implementado em R2/R2.1 como serial/per-entity oracle vs parallel/range paths.
 
 ---
 
 ## L-009 — Estados de maturidade
-
-Estados inicialmente discutidos e depois formalizados:
 
 ```text
 IDEA
@@ -443,17 +376,15 @@ IDEA
 → FOUNDATIONAL
 ```
 
-Regra central:
+`FOUNDATIONAL` estabiliza contrato, não congela implementação.
 
-> `FOUNDATIONAL` estabiliza contrato, não congela implementação.
-
-Até R2.1: nenhum contrato foi promovido a `FOUNDATIONAL`.
+Até R2.1: nenhum contrato foi promovido.
 
 ---
 
 ## L-010 — Testes adversariais conceituais
 
-Cenários sugeridos para fases futuras:
+Foram sugeridos:
 
 - 1 bilhão de entidades vazias;
 - 10 milhões de objetos móveis;
@@ -467,15 +398,13 @@ Cenários sugeridos para fases futuras:
 - destruição durante ray tracing;
 - mundo procedural amplo/infinito.
 
-Esses itens não foram executados até R2.1; são exemplos de metodologia adversarial.
+Não executados até R2.1; eram exemplos de metodologia adversarial.
 
 ---
 
 ## L-011 — Deterministic vs non-deterministic domains
 
-Foi proposto separar:
-
-### Deterministic domain
+Deterministic domain proposto:
 
 - gameplay;
 - multiplayer;
@@ -483,7 +412,7 @@ Foi proposto separar:
 - replay;
 - transactions.
 
-### Non-deterministic domain
+Non-deterministic domain:
 
 - particles;
 - visual AI;
@@ -491,43 +420,33 @@ Foi proposto separar:
 - denoising;
 - procedural decoration.
 
-Nenhuma política completa foi implementada; R1/R2 apenas demonstraram exact-state determinism nos workloads registrados.
+R1/R2 demonstraram apenas exact-state determinism nos workloads registrados.
 
 ---
 
 ## L-012 — Error Budget e Computational Economy
 
-Duas ideias futuras foram registradas.
-
 ### Error Budget
 
-Em vez de somente `LOD0/1/2`, declarar algo como:
+Em vez de apenas LODs fixos:
 
 ```text
 max_screen_error = 0.25 pixels
 ```
 
-A engine escolheria uma representação adequada ao orçamento/erro.
+A engine escolheria representação adequada ao erro/orçamento.
 
 ### Computational Economy
 
-Frame teria orçamento dinâmico entre systems, potencialmente redistribuído quando física/render/etc. consumissem menos ou mais.
+Frame teria orçamento dinâmico redistribuível entre sistemas.
 
-Objetivo conceitual:
-
-```text
-quality of world / computational cost
-```
-
-Nenhuma das duas ideias foi implementada até R2.1.
+Nenhuma das duas ideias existia implementada até R2.1.
 
 ---
 
 ## L-013 — Ordem de construção escolhida
 
-Foi rejeitado começar por editor.
-
-Ordem conceitual:
+Rejeitado começar pelo editor:
 
 ```text
 Engine Lab
@@ -536,15 +455,11 @@ Engine Lab
 → Editor
 ```
 
-O primeiro protótipo deveria ser um laboratório de stress/estado, não um jogo completo.
-
 ### D-004 — Primeiro gate real
-
-Primeira propriedade a provar:
 
 > Um `World State` pode existir sem conhecer renderer, mesh, collider, scene graph ou GPU?
 
-Isso levou diretamente ao LAB-0/R0.
+Isso levou ao LAB-0/R0.
 
 ---
 
@@ -552,95 +467,63 @@ Isso levou diretamente ao LAB-0/R0.
 
 ## L-014 — Limitações da sandbox
 
-Quando foi perguntado se todo o projeto poderia ser desenvolvido na sandbox, a verificação registrou:
-
 Disponível:
 
 - GCC 14.2;
 - Clang 17;
 - CMake 3.31;
 - Python 3.13;
-- C/C++/multithreading/SIMD/estrutura de dados/testes/benchmarks CPU.
+- C/C++/multithreading/SIMD/data structures/tests/benchmarks CPU.
 
 Não disponível para evidência real:
 
 - GPU NVIDIA exposta;
-- Vulkan device de produção para benchmark;
+- Vulkan device de produção;
 - VRAM/timestamps/occupancy reais.
 
 ### D-005 — Política de GPU evidence
 
-**Decisão:** código GPU pode ser preparado na sandbox, mas nenhum número será chamado de medição de GPU sem execução em hardware real.
-
-Essa regra foi incorporada à Constituição.
+Código GPU pode ser preparado na sandbox, mas nenhum número é chamado de GPU measurement sem execução real.
 
 ---
 
 ## L-015 — LAB-0 criado
 
-O primeiro laboratório C++23 foi criado com:
+C++23 com World Kernel, EntityId, Position, Velocity, Health, transactions, SoA storage, reference simulation, tests, benchmarks e constitution.
 
-- `World Kernel` de referência;
-- `EntityId`;
-- `World State`;
-- `Position`;
-- `Velocity`;
-- `Health`;
-- Transaction System;
-- SoA storage;
-- reference simulation;
-- tests;
-- benchmarks;
-- architecture constitution.
-
-Build reportado:
+Build inicial:
 
 - GCC 14.2;
 - C++23;
 - CMake 3.31;
 - Linux x86-64.
 
-Testes iniciais:
-
 ```text
 100% tests passed
 0 tests failed
 ```
 
-Foi testado que uma transação contendo operação válida seguida de inválida não deveria produzir mudança parcial.
+Atomicidade foi testada com transaction contendo operação válida seguida de inválida.
 
 ---
 
 ## L-016 — LAB-0 performance baseline
 
-Resultados reportados em uma execução:
-
-| Entidades | Tempo por frame CPU |
+| Entidades | Tempo CPU |
 |---:|---:|
-| 100.000 | ~0.140 ms |
-| 1.000.000 | ~1.357 ms |
-| 3.000.000 | ~3.917 ms |
+| 100.000 | ~0.140 ms/frame |
+| 1.000.000 | ~1.357 ms/frame |
+| 3.000.000 | ~3.917 ms/frame |
 
-Throughput aproximado reportado:
+Uma execução intermediária citou ~1.22 ms para 1M.
 
-- ~737 milhões entity-updates/s para 1 milhão;
-- ~766 milhões entity-updates/s para 3 milhões.
-
-Uma atualização intermediária citou ~1.22 ms para 1 milhão.
-
-Interpretação registrada:
-
-- workload = integração mínima de posição/velocidade;
-- não é benchmark de personagens/NPCs completos;
-- objetivo = baseline contra o qual SIMD, multithreading e GPU futuros possam ser comparados.
+Workload = integração mínima position/velocity; não NPC completo.
 
 ---
 
 # PARTE IV — R0/R1
 
 ## L-017 — Diretiva para concluir R0 e entrar em R1
-
-Foi explicitamente escolhido:
 
 ```text
 R0 completion
@@ -650,91 +533,47 @@ R0 completion
 → rollback
 ```
 
-Critério de sucesso proposto:
-
-> executar milhares de frames, persistir transações, reconstruir World pristine e obter exatamente o mesmo hash final.
+Gate: milhares de frames, persistir transactions, reconstruir pristine World, obter same hash.
 
 ---
 
 ## L-018 — Falha encontrada: `reserve_entity_id()`
 
-Ao revisar LAB-0 para R1, foi encontrado que:
-
-```text
-reserve_entity_id()
-```
-
-alterava o cursor de identidade fora das transações.
-
-Consequência:
-
-```text
-initial world + persisted transaction journal
-```
-
-poderia não reconstruir integralmente o futuro cursor de IDs.
+`reserve_entity_id()` alterava cursor fora das transactions e podia quebrar reconstrução exata.
 
 ### D-006 — Identity allocation transaction-derived
 
-Correção:
-
-- `CreateEntity` passa a determinar/alocar o ID dentro da transação;
-- `next_entity_id()` é read-only.
-
-Razão:
-
-> Toda informação necessária para reconstrução autoritativa precisa estar derivável do estado inicial + história autoritativa.
+- `CreateEntity` aloca dentro da transaction;
+- `next_entity_id()` read-only.
 
 ---
 
 ## L-019 — `AdvanceReference` virou mutação autoritativa
 
-Antes, `world.integrate_reference(dt)` podia modificar diretamente posições.
-
-Isso quebraria a regra de mutação transacional.
-
-Correção:
+Antes `world.integrate_reference(dt)` podia escrever diretamente. Corrigido para:
 
 ```text
 Transaction N
 └── AdvanceReference(dt)
 ```
 
-O frame persistente passa a poder conter somente o comando determinístico de avanço, sem registrar cada posição resultante.
-
 ---
 
 ## L-020 — Forward journal vs ephemeral undo
 
-Foi separada a história em duas responsabilidades:
+Persistente: forward transactions.
 
-### Persistente
-
-- forward transactions somente.
-
-### Temporário
-
-- pre-transaction state necessário para exact undo/rollback.
+Temporário: pre-state necessário para exact undo.
 
 ### D-007 — Separar formato persistente de undo
 
-Razão:
-
-> Um journal compacto e reproduzível não precisa assumir que o formato mais conveniente para persistência é o mesmo formato de rollback em memória.
+Journal compacto/reproduzível não precisa usar o mesmo formato de rollback em memória.
 
 ---
 
 ## L-021 — R1 replay proof
 
-Workload:
-
-- 256 initial entities;
-- 5.000 frames;
-- 5.001 transactions;
-- health mutations;
-- destruction;
-- later create;
-- `AdvanceReference`.
+256 entities, 5.000 frames, 5.001 transactions, health changes, destroy/create, `AdvanceReference`.
 
 Hash final:
 
@@ -742,129 +581,74 @@ Hash final:
 9e6b6a3bac5a0564e2f3100bcf7eed9d0e48ef44615382f27931d5dcb9960c57
 ```
 
-Procedimento:
-
-1. executar World original;
-2. persistir journal;
-3. criar novo `World()`;
-4. aplicar apenas forward transactions em ordem;
-5. comparar SHA-256.
-
-Resultado:
-
-- mesmo hash final.
+Original e replay pristine produziram mesmo hash.
 
 ---
 
 ## L-022 — Cross-compiler R1
 
-O mesmo workload produziu o mesmo hash com:
+GCC 14.2 e Clang 17 em x86-64 Linux produziram same workload hash.
 
-- GCC 14.2;
-- Clang 17;
-- x86-64 Linux.
-
-Conclusão permitida:
-
-> deterministic replay foi observado entre os compiladores testados na mesma arquitetura/ambiente de referência.
-
-Conclusão proibida:
-
-> determinismo universal Windows/Linux/ARM/GPU.
+Não prova Windows/Linux/ARM/GPU determinism universal.
 
 ---
 
 ## L-023 — SHA-256 cross-check
 
-A implementação C++ do hash foi comparada a Python `hashlib.sha256()` para um estado conhecido.
-
-Hash:
+C++ vs Python hashlib:
 
 ```text
 9052d221ad22d52fb0a43dbec4410a9546d7bbb968642614ee0deb55758e7c33
 ```
 
-Ambas as implementações produziram exatamente esse valor.
-
 ---
 
 ## L-024 — R1 rollback proof
 
-O journal foi revertido de final para checkpoint anterior.
-
-Validações:
-
-- hash do rollback = hash original daquele checkpoint;
-- reapply tail = hash final original;
-- full rollback do spawn journal-owned = pristine world hash + identity cursor restaurado.
+Rollback para checkpoint, reapply tail e full rollback de spawn journal-owned reproduziram hashes/cursor corretos.
 
 ---
 
 ## L-025 — Rollback divergence guard
 
-Foi adicionado guard de hash.
+World divergente do journal → rollback rejeitado.
 
-Se algum código modifica World fora do journal e o hash atual não corresponde ao tail esperado:
+### D-008 — Não aplicar stale undo
 
-```text
-ROLLBACK REJECTED
-```
-
-### D-008 — Não aplicar undo sobre estado divergente
-
-Razão:
-
-> Stale undo em World divergente é pior do que recusar rollback, porque pode produzir corrupção silenciosa.
+Recusar rollback é preferível a corrupção silenciosa.
 
 ---
 
 ## L-026 — R1 performance
 
-Cenário 256 entities / 5.000 frames:
-
-- journal commit total: ~272.054 ms;
+- commit total ~272.054 ms;
 - ~0.054 ms/frame;
-- journal: 224.236 bytes;
-- save: ~0.812 ms;
-- load: ~0.720 ms;
-- replay: ~1.504 ms;
-- rollback all: ~275.413 ms.
+- journal 224.236 bytes;
+- save ~0.812 ms;
+- load ~0.720 ms;
+- replay ~1.504 ms;
+- rollback all ~275.413 ms.
 
-O próprio experimento revelou custos não escaláveis:
-
-- undo de `AdvanceReference` guarda old states das entidades tocadas;
-- full World SHA-256 por commit é O(World size).
+Limites: full World hash/commit e full touched-state undo.
 
 ### D-009 — Não congelar implementação R1
 
 Contrato funcionou; implementação não foi promovida como final.
 
-Pesquisas futuras listadas:
-
-- page/chunk hashing;
-- Merkle-style hierarchy;
-- copy-on-write history;
-- bounded rollback;
-- compressed undo.
-
 ---
 
 ## L-027 — R0 baseline após integração transacional
 
-1.000.000 entities / 120 frames:
+1M entities / 120 frames:
 
-- spawn: 3.000.000 mutations;
+- spawn 3M mutations;
 - spawn commit ~39.873 ms;
 - simulation ~1.229 ms/frame;
-- ~813.5M minimal position updates/s.
-
-Resultado reforçou que a transação compacta de `AdvanceReference` não exigia persistir um milhão de posições por frame.
+- ~813.5M minimal updates/s.
 
 ---
 
 ## L-028 — Status após R1
-
-Classificação registrada:
 
 ```text
 R0 VERIFIED — reference scope
@@ -872,171 +656,95 @@ R1 VERIFIED — same-architecture reference scope
 FOUNDATIONAL NONE
 ```
 
-Próxima hipótese: R2 Execution Kernel.
-
 ---
 
 # PARTE V — R2 EXECUTION KERNEL
 
 ## L-029 — Hipótese R2
 
-Hipótese explicitada:
+> Sistemas declaram dependências; kernel determina ordem/paralelismo seguro sem fixed frame phases e mantém commit determinístico.
 
-> O sistema pode declarar dependências de dados e permitir que o kernel determine ordem/paralelismo seguro sem hard-coded frame phases, mantendo um commit autoritativo determinístico.
-
-Regra de aceitação:
+Gate:
 
 ```text
 Serial World Hash == Parallel World Hash
 ```
 
-Caso contrário, o executor paralelo falha mesmo sendo mais rápido.
-
 ---
 
 ## L-030 — Private patches, não direct World writes
 
-Precaução adicionada antes do benchmark:
-
-Sistemas na mesma wave não podem escrever `World` diretamente.
-
-Caminho:
-
 ```text
 immutable pre-wave World
-→ System A/B/C private computation
-→ Patch A/B/C
+→ private computation
+→ private patches
 → canonical merge
-→ Transaction
+→ transaction
 → World
 ```
 
 ### D-010 — Workers compute proposals; transaction owns authority
 
-Razão:
-
-> Preservar R0/R1 e impedir que scheduling paralelo torne a verdade do World dependente de timing de thread.
+Scheduling não pode tornar truth dependente de thread timing.
 
 ---
 
 ## L-031 — Resource access model
 
-Recursos iniciais:
-
-- Identity;
-- EntityState;
-- Position;
-- Velocity;
-- Health.
-
-Cada system declara:
-
-- stable `SystemId`;
-- read set;
-- write set;
-- optional `after` dependencies;
-- system function.
-
-`SystemContext` fiscaliza o contrato no path de referência.
+Identity, EntityState, Position, Velocity, Health; cada system declara stable SystemId, reads, writes, optional `after`, function.
 
 ---
 
 ## L-032 — Hazard rules
 
-Implementadas/testadas:
-
 ```text
-READ X  + READ X  → parallel-safe
-READ X  + WRITE X → serialize
-WRITE X + READ X  → serialize
-WRITE X + WRITE X → serialize
+READ+READ   parallel-safe
+READ+WRITE  serialize
+WRITE+READ  serialize
+WRITE+WRITE serialize
 ```
 
-Write permission não implica read permission.
-
-Undeclared access falha antes de qualquer commit da wave.
+WRITE não implica READ. Undeclared access rejeitado.
 
 ---
 
 ## L-033 — DAG e cycles
 
-Explicit dependencies entram no grafo.
-
-Cycles são rejeitados.
-
-Para hazards ambíguos, stable `SystemId` foi usado como tie-break determinístico no reference model.
-
-Isso não foi promovido como frame-phase universal.
+Explicit dependencies entram no graph; cycles rejeitados; stable SystemId tie-break no reference model.
 
 ---
 
 ## L-034 — Deterministic waves
 
-Kahn topological sorting produz waves.
-
-Cada wave:
-
-1. observa mesmo pre-wave World;
-2. executa systems serial ou concurrent;
-3. coleta private outputs;
-4. ordena por stable SystemId;
-5. funde em uma transaction;
-6. commit antes da próxima wave.
+Kahn ordering; same-wave systems observam same pre-wave World; canonical merge e one transaction/wave.
 
 ---
 
-## L-035 — Primeira correção de lifecycle do R2
+## L-035 — Correção de lifecycle
 
-O primeiro prototype criava worker pool por `execute()`.
-
-Benchmark mostrou que thread creation/lifecycle contaminava frame time.
+Primeiro prototype criava worker pool por `execute()`.
 
 ### D-011 — Persistent `ExecutionRuntime`
 
-Correção:
-
-- worker threads persistem entre frames;
-- `ExecutionKernel::execute()` permanece convenience one-shot path;
-- benchmark de scheduler usa runtime persistente.
-
-Razão:
-
-> Não comparar scheduler paralelo carregando artificialmente custo de criação de threads a cada frame.
+Workers persistem; benchmark usa runtime persistente.
 
 ---
 
 ## L-036 — R2 correctness proof
 
-Testes passaram para:
-
-- read/read same wave;
-- read/write serialization;
-- write/write serialization;
-- cycle rejection;
-- undeclared access rejection;
-- serial/parallel convergence.
-
-4.096 entities / 120 frames hash:
+Hash 4.096 entities / 120 frames:
 
 ```text
 057e4f9d9e4921cb93da1a0c5b1245fafbadb49ce8755f572ebff34b558e53ca
 ```
 
-Reproduzido GCC/Clang/TSan test path.
+GCC/Clang/TSan paths reproduziram correctness scope.
 
 ---
 
 ## L-037 — Cross-worker R2
 
-8.192 entities / 60 frames / 4 systems / 2 waves.
-
-Workers:
-
-```text
-1, 2, 4, 5
-```
-
-Todos produziram:
+8.192 entities / 60 frames / 4 systems / 2 waves / workers 1,2,4,5:
 
 ```text
 71ccbd8aaaed14974c7c70ab4879f099f42195dd1ed6d312d93fa8642cf4218c
@@ -1044,11 +752,7 @@ Todos produziram:
 
 ---
 
-## L-038 — R2 compute-only benchmark
-
-32 independent systems / 750.000 deterministic integer iterations each.
-
-Medianas:
+## L-038 — Compute-only benchmark
 
 | Workers | Median | Speedup |
 |---:|---:|---:|
@@ -1057,23 +761,11 @@ Medianas:
 | 4 | 24.551 ms | 3.279× |
 | 5 | 23.186 ms | 3.472× |
 
-Checksum:
-
-```text
-3462961269496396242
-```
-
-Conclusão:
-
-> O worker scheduler consegue expor paralelismo forte quando tasks são independentes e compute-heavy.
+Checksum `3462961269496396242`.
 
 ---
 
 ## L-039 — R2 authoritative benchmark
-
-8.192 entities / 60 frames / 4 systems / 2 waves / per-entity patches.
-
-Medianas finais canônicas:
 
 | Workers | Median | Speedup |
 |---:|---:|---:|
@@ -1082,86 +774,31 @@ Medianas finais canônicas:
 | 4 | 46.826 ms | 1.051× |
 | 5 | 45.700 ms | 1.076× |
 
-Durante exploração, uma medição mostrou 4 workers cerca de 18% pior que serial e outra amostragem indicou ~1.21× em 2 workers e ~1.15× em 4–5. O relatório final usou medianas acima.
-
-Conclusão:
-
-> Scheduler paralelo funciona; world workload não escala proporcionalmente.
+Scheduler funciona; world workload não escala proporcionalmente.
 
 ---
 
-## L-040 — Gargalo R2 identificado
+## L-040 — Gargalo R2
 
-O problema observado:
-
-```text
-Worker computes
-→ SetPosition(entity 1)
-→ SetPosition(entity 2)
-→ ...
-→ thousands/millions Mutation records
-→ merge
-→ validate
-→ serial commit
-```
-
-Custos:
-
-- mutation objects;
-- vector growth;
-- metadata repetition;
-- memory bandwidth;
-- merge;
-- validation;
-- serial publication.
+Millions of Mutation records → materialization, metadata, memory bandwidth, merge, validation, serial publication.
 
 ### D-012 — R2 performance = PARTIAL
 
-Não mascarar como sucesso completo.
-
-R2 foi fechado como correctness experiment, performance parcial.
+Correctness verified; performance partial.
 
 ---
 
 ## L-041 — Sanitizers R2
 
-Registrado:
-
-- ASan pass;
-- UBSan pass;
-- TSan concurrent test sem reported data race.
-
-Limite declarado:
-
-> Sanitizer pass aumenta evidência, não prova matemática de ausência universal de races.
+ASan pass, UBSan pass, TSan concurrent test sem reported race.
 
 ---
 
-## L-042 — Mudança de roadmap: inserir R2.1 antes de R3
+## L-042 — Mudança de roadmap
 
-Roadmap original seguiria:
+### D-013 — Inserir R2.1 antes de R3
 
-```text
-R2 → R3 Spatial Kernel
-```
-
-Os dados mostraram que isso carregaria um authority-boundary bottleneck não resolvido para o Spatial Kernel.
-
-### D-013 — Inserir R2.1
-
-Novo roadmap:
-
-```text
-R0
-R1
-R2
-R2.1 Hybrid/Chunked Transaction Patches
-R3 Spatial Kernel
-```
-
-Razão:
-
-> Resolver o gargalo que o laboratório efetivamente encontrou antes de construir outra camada sobre ele.
+Resolver authority-boundary bottleneck antes de construir Spatial Kernel.
 
 ---
 
@@ -1169,40 +806,15 @@ Razão:
 
 ## L-043 — Hipótese R2.1
 
-Pergunta:
+Manter exact semantics sem uma `Mutation` por entity/component.
 
-> Podemos manter exact R0/R1/R2 semantics sem materializar uma `Mutation` para cada entity/component alterado?
-
-Candidatos planejados:
-
-1. per-entity mutations — oracle;
-2. contiguous range patches;
-3. fixed-size page/chunk patches;
-4. copy-on-write pages;
-5. deterministic/disjoint parallel commit.
-
-Regra:
-
-```text
-Hash(A) == Hash(B) == Hash(C) == Hash(D) == Hash(E)
-```
-
-quando semanticamente equivalentes.
+Candidatos: oracle scalar, contiguous ranges, fixed pages, COW pages, disjoint parallel commit.
 
 ---
 
-## L-044 — Primeira decisão R2.1: estrutura e dense writes não precisam da mesma granularidade
-
-Antes do benchmark foi observado:
-
-- `Create/Destroy` são naturalmente discrete structural events;
-- Position/Velocity/Health densos podem ser ranges.
+## L-044 — Dense e structural writes não exigem mesma granularidade
 
 ### D-014 — Uma authority boundary, múltiplas granularidades
-
-Não criar dois sistemas de estado.
-
-Criar uma transaction híbrida:
 
 ```text
 PatchTransaction
@@ -1211,231 +823,99 @@ PatchTransaction
 └── u32 ranges
 ```
 
-Tudo sob um único `TransactionId`.
-
 ---
 
 ## L-045 — Patch equivalence proof
 
-4.096 entities / 120 frames.
-
-Comparados:
-
-- per-entity oracle;
-- contiguous ranges;
-- fixed pages 256;
-- page clone/COW-style forward patch;
-- disjoint parallel publication;
-- persistent parallel publisher.
-
-Todos produziram:
+4.096 entities / 120 frames, candidatos reproduziram:
 
 ```text
 a073236582885e8cd53f22aa4825ed539a00c74c7c026e61d9e1db9940ada47e
 ```
 
-Também passaram:
-
-- PatchJournal replay;
-- rollback frame 60;
-- tail replay;
-- binary save/load;
-- overlap rejection;
-- non-finite Vec3 rejection.
+Replay/rollback/save/load/overlap/non-finite checks passaram.
 
 ---
 
-## L-046 — Primeiro benchmark R2.1 e duas hipóteses falsificadas cedo
+## L-046 — Early falsifications
 
-Resultados exploratórios mostraram:
+Pages256 não eram automaticamente melhores; thread creation dentro de commit tornava parallel path artificialmente caro.
 
-1. pages de 256 não eram automaticamente melhores;
-2. criar threads dentro de cada commit tornava `parallel commit` injustamente caro.
-
-Para 1 milhão de entities, o range contíguo reduziu payload temporário aproximado:
-
-```text
-~96 MB → ~28 MB
-```
-
-no workload dense de três componentes.
-
-Uma primeira execução mostrou range ~1.25× mais rápido que scalar oracle antes do benchmark integrado final.
+Dense 1M payload ~96 MB scalar → ~28 MB range.
 
 ### D-015 — Persistent parallel publisher
 
-Assim como R2 worker lifecycle, parallel publication deveria usar workers persistentes para não incluir thread creation em cada commit.
+Evitar lifecycle artificial.
 
 ---
 
-## L-047 — Sparse workload decide contra “one page size fits all”
+## L-047 — Sparse workload contra “one page fits all”
 
-100.000 entities / 200 frames / 1% Position writes.
+100k entities / 200 frames / 1% writes.
 
-### Clustered 1%
+Clustered:
 
-- scalar: 1.000 records/frame, ~32.512 B payload/frame, 16.087 ms total reference run;
-- exact ranges: 10 records/frame, ~12.400 B, 17.213 ms;
-- 256-page clone: 10 records/frame, ~31.120 B, 18.931 ms;
-- full range: 1 record/frame, ~1.200.040 B, 249.793 ms.
+- scalar 16.087 ms / 32.512 B frame;
+- exact ranges 17.213 ms / 12.400 B;
+- pages256 18.931 ms / 31.120 B;
+- full range 249.793 ms / 1.200.040 B.
 
-Conclusão:
+Scattered:
 
-- range reduziu payload;
-- scalar ainda foi marginalmente mais rápido neste sparse small workload.
-
-### Scattered 1%
-
-- scalar: 1.000 records/frame, ~32.512 B, 12.036 ms;
-- one-value ranges: 1.000 records, ~52.000 B, 17.018 ms;
-- 256-page clone: 391 pages, ~1.215.640 B, 285.824 ms;
-- full component range: ~1.200.040 B, 249.986 ms.
-
-Conclusão:
-
-> fixed page 256 pode mover ~100× mais Position data do que o necessário em pattern esparso espalhado.
+- scalar 12.036 ms / 32.512 B;
+- one-value ranges 17.018 ms / 52.000 B;
+- pages256 285.824 ms / 1.215.640 B;
+- full range 249.986 ms / 1.200.040 B.
 
 ### D-016 — Rejeitar fixed page universal
 
-Decisão:
-
-```text
-structural         → scalar
-sparse scattered   → scalar
-clustered          → exact ranges quando benéfico
-dense              → large ranges
-fixed pages        → optional implementation detail
-COW                 → not promoted
-parallel publish    → optional when amortized
-```
-
-Essa foi uma falsificação explícita de uma possível arquitetura universal de pages.
+Scalar para structural/sparse; exact ranges clustered quando úteis; large ranges dense; pages/COW optional/not promoted.
 
 ---
 
 ## L-048 — No silent precedence
 
-Foi testado conflito:
-
-```text
-scalar SetPosition(entity 5)
-+
-PositionRange[4..8]
-```
-
-Resultado:
-
-```text
-REJECT
-```
+Scalar Position + overlapping PositionRange → REJECT.
 
 ### D-017 — Overlap ambíguo é erro
 
-Não criar regras implícitas “range ganha” ou “scalar ganha”.
-
-Razão:
-
-> Precedência escondida cria bugs difíceis de auditar e torna state result dependente de detalhe de representação.
+Sem regra implícita range/scalar winner.
 
 ---
 
 ## L-049 — Hybrid scalar + range transaction proof
 
-Uma mesma transaction combinou:
-
-- scalar Health write;
-- scalar DestroyEntity;
-- dense Position range.
-
-Ela passou:
-
-- commit;
-- serialize;
-- load;
-- replay;
-- rollback.
-
-Portanto lanes diferentes continuam uma única fronteira autoritativa.
+Health scalar + Destroy + dense Position range em same transaction passaram commit/serialize/load/replay/rollback.
 
 ---
 
 ## L-050 — R2 Execution integration
 
-`SystemContext` ganhou:
+`set_position_range`, `set_velocity_range`, `set_health_range`; legacy `execute()` rejeita range producer; `execute_patched()` preserva DAG semantics.
 
-```text
-set_position_range
-set_velocity_range
-set_health_range
-```
+### D-018 — Scheduling separado de patch storage
 
-O legacy `execute()` rejeita range-producing system.
-
-Novo `execute_patched()`:
-
-1. usa mesmo DAG R2;
-2. same immutable pre-wave World;
-3. coleta scalar/range private outputs;
-4. stable SystemId sort;
-5. merge em um hybrid PatchTransaction/wave;
-6. full validate;
-7. publish.
-
-### D-018 — Scheduling semantics separados de patch storage
-
-Razão:
-
-> Otimizar granularidade de transaction não deve exigir redesenhar a lógica de dependências.
+Granularidade de transaction não deve redesenhar dependency logic.
 
 ---
 
-## L-051 — R2.1 execution equivalence proof
+## L-051 — R2.1 execution equivalence
 
-4.096 entities / 120 frames.
-
-Original scalar serial oracle vs range-emitting worker-pool + PatchJournal:
+4.096 entities / 120 frames:
 
 ```text
 657f7bd1092e03c74acf7a38b7a70243f3a8decef268fcce0c552b4195f34a94
 ```
 
-Mesmo hash.
-
-Journal:
-
-- 240 wave transactions;
-- replay reproduziu exact final hash.
+240 wave transactions; replay same hash.
 
 ---
 
-## L-052 — Integrated benchmark: 8.192 entities
+## L-052 — Integrated 8.192 entities
 
-60 frames.
+Hash `71ccbd8...`; ranges ajudaram, worker overhead podia piorar small/medium workload.
 
-Hash:
-
-```text
-71ccbd8aaaed14974c7c70ab4879f099f42195dd1ed6d312d93fa8642cf4218c
-```
-
-| Candidate | Median | Speedup |
-|---|---:|---:|
-| R2 scalar serial | 44.803 ms | 1.000× |
-| R2 scalar / 4 workers | 61.923 ms | 0.724× |
-| R2.1 ranges serial | 32.612 ms | 1.374× |
-| R2.1 ranges / 4 workers | 35.361 ms | 1.267× |
-| R2.1 ranges / 4 workers + persistent parallel commit | 36.034 ms | 1.243× |
-
-Conclusão:
-
-- ranges ajudam;
-- worker overhead pode piorar small/medium workload.
-
----
-
-## L-053 — Integrated benchmark: 100.000 entities
-
-20 frames.
+## L-053 — Integrated 100.000 entities
 
 Hash:
 
@@ -1443,23 +923,9 @@ Hash:
 e6803f6411816d3e2261f091e7eb82718262ee9969b33dce9135467c9072c2c4
 ```
 
-| Candidate | Median | Speedup |
-|---|---:|---:|
-| R2 scalar serial | 192.925 ms | 1.000× |
-| R2 scalar / 4 workers | 151.304 ms | 1.275× |
-| R2.1 ranges serial | 138.596 ms | 1.392× |
-| R2.1 ranges / 4 workers | 102.150 ms | 1.889× |
-| R2.1 ranges / 4 workers + persistent parallel commit | 102.841 ms | 1.876× |
+Ranges + workers chegaram ~1.889× vs scalar serial naquele workload.
 
-Conclusão:
-
-- redução de patch overhead permite que worker parallelism apareça com mais clareza.
-
----
-
-## L-054 — Integrated benchmark: 1.000.000 entities
-
-3 frames / 4 systems / 2 waves.
+## L-054 — Integrated 1.000.000 entities
 
 Hash:
 
@@ -1467,89 +933,31 @@ Hash:
 61d624a0af70729626dafebd3b3bea4cb5a074e625ec7f17ac981f6eef5a2c60
 ```
 
-| Candidate | Median | Speedup |
-|---|---:|---:|
-| R2 scalar serial | 740.970 ms | 1.000× |
-| R2 scalar / 4 workers | 517.654 ms | 1.431× |
-| R2.1 ranges serial | 228.456 ms | 3.243× |
-| R2.1 ranges / 4 workers | 166.262 ms | 4.457× |
-| R2.1 ranges / 4 workers + persistent parallel commit | 150.455 ms | 4.925× |
+Scalar serial 740.970 ms; range+4 workers+persistent commit 150.455 ms (~4.925× naquele workload).
 
-### Interpretação registrada
-
-Não declarar “engine 4.925× mais rápida”.
-
-Declarar:
-
-> Neste workload autoritativo denso, substituir milhões de scalar Mutation records por typed ranges removeu overhead suficiente para reduzir fortemente o tempo mantendo exact same final SHA-256.
+Não comparar esse número a engines externas.
 
 ---
 
 ## L-055 — Dense payload evidence
 
-1.000.000 entities / 3 components / 1 frame:
-
-```text
-per-entity oracle:
-3,000,000 records
-~96,000,000 bytes vector capacity
-
-contiguous range:
-3 records
-~28,000,120 bytes
-
-256 pages:
-11,721 records
-~28,468,840 bytes
-```
-
-O ganho de range vem de remover metadata repetida, não de eliminar os component values.
+Scalar 3M records ~96 MB vector capacity; contiguous range 3 records ~28.000.120 B; pages256 11.721 records ~28.468.840 B.
 
 ---
 
 ## L-056 — Cross-compiler e sanitizers R2.1
 
-Hashes exatos reproduzidos em:
+GCC/Clang same hashes; ASan/UBSan dedicated tests pass; TSan Execution Kernel sem race reportada; full patch TSan não reivindicado quando timeout impediu conclusão.
 
-- GCC 14.2 x86-64 Linux;
-- Clang 17 x86-64 Linux.
-
-Checks:
-
-- ASan/UBSan dedicated R2.1 patch/execution tests sem erro reportado;
-- TSan R2.1 Execution Kernel sem race reportada;
-- smaller persistent publisher TSan sem race reportada;
-- full patch TSan não reivindicado porque repeated thread-spawning reference path excedeu limite de invocação.
-
-### D-019 — Timeout não conta como aprovação
-
-Quando full instrumented suite excedeu limite, foi executada em partes/dedicated tests.
-
-Razão:
-
-> Timeout não deve ser convertido em “pass” por conveniência.
+### D-019 — Timeout não é aprovação
 
 ---
 
 ## L-057 — Release hygiene R2.1
 
-Release source foi reconstruído limpo com:
+GCC/Clang 4/4 tests, zero warnings configured set, clean ZIP rebuild/test.
 
-- GCC 14.2;
-- Clang 17;
-- 4/4 tests em ambos;
-- zero warnings no strict warning set configurado.
-
-O ZIP foi extraído em diretório vazio, reconfigurado via CMake, compilado e testado.
-
-Result:
-
-```text
-100% tests passed
-0 tests failed
-```
-
-R2.1 ZIP SHA-256 entregue:
+ZIP SHA-256:
 
 ```text
 a4d0bcdef114e84456758c6c0067df50b1aaf599bda7686945d433aa9137cd63
@@ -1560,64 +968,28 @@ a4d0bcdef114e84456758c6c0067df50b1aaf599bda7686945d433aa9137cd63
 ## L-058 — Status após R2.1
 
 ```text
-R0 VERIFIED — reference scope
-R1 VERIFIED — same-architecture reference scope
-R2 VERIFIED — correctness; performance partial
-R2.1 VERIFIED — reference correctness + tested performance
+R0 VERIFIED
+R1 VERIFIED
+R2 VERIFIED correctness / performance partial
+R2.1 VERIFIED
 FOUNDATIONAL NONE
 ```
 
 ### D-020 — R3 liberado
 
-R2.1 resolveu o gargalo estrutural suficiente para justificar iniciar Spatial Kernel research.
-
-Isso não significa que hybrid patches são final/foundational.
-
 ---
 
 # PARTE VII — R3 DIREÇÃO DE PESQUISA
 
-## L-059 — Spatial Kernel Bake-Off definido como próxima etapa
+## L-059 — Spatial Kernel Bake-Off definido
 
-Nenhum vencedor foi escolhido antecipadamente.
+Candidatos: grid, hash grid, BVH, sparse brick, octree, possibly hierarchical hash grid.
 
-Candidatos citados:
-
-- Flat/Uniform Grid;
-- Hash Grid;
-- BVH;
-- Sparse Brick Hierarchy;
-- Octree;
-- possivelmente Hierarchical Hash Grid.
-
-Workloads planejados:
-
-- static dense;
-- static sparse;
-- moving objects;
-- teleports;
-- regional updates/destruction;
-- streaming;
-- near/range queries;
-- ray queries;
-- large queries;
-- million-object scale updates.
-
-Métricas:
-
-- RAM;
-- build time;
-- update time;
-- query time;
-- cache behavior quando mensurável;
-- thread scalability;
-- integração com authority patch boundary.
+Workloads: static dense/sparse, moving, teleports, regional changes, streaming, range/ray/large queries, million-object updates.
 
 ### D-021 — R3 sem preferência tecnológica
 
-Nenhuma SVO/octree/BVH/grid será promovida por reputação ou sofisticação.
-
-O mesmo contrato e workload decidirão.
+Mesmo contrato/workload decide.
 
 ---
 
@@ -1625,48 +997,19 @@ O mesmo contrato e workload decidirão.
 
 ## L-060 — Mandato de repositório oficial
 
-O usuário criou:
+Foi criado:
 
 ```text
 git@github.com:AiltonSantanaReis/D-SF.git
 ```
 
-E determinou que:
+No baseline inicial decidiu-se centralizar planos, decisões, evidência e documentação nesse repositório.
 
-- o desenvolvimento deste projeto deve ficar neste repositório;
-- o acesso de projeto deve se limitar a ele;
-- todo plano, ideia, resultado de teste, decisão e razão deve ser registrado;
-- o histórico utilizado para reconstruir o baseline deve ser somente esta conversa;
-- documentos precisam ser centralizados e atualizados, evitando cópias concorrentes;
-- README precisa conter o desenho da arquitetura;
-- qualidade documental e padronização são mais importantes do que quantidade de arquivos;
-- arquivos de estado não devem receber afirmações como fato sem evidência devidamente comprovada;
-- intenção inicial, estágio atual, destino, regras e ponto de fechamento precisam ficar explícitos.
+### D-022 — D-SF como fonte oficial
 
-### Verificação do repositório
+Decisão original: GitHub D-SF como system of record.
 
-O GitHub connector confirmou:
-
-```text
-repository: AiltonSantanaReis/D-SF
-visibility: public
-default branch: main
-size at inspection: 0
-permissions available to authenticated connector:
-admin / maintain / pull / push / triage
-```
-
-Nenhum outro repositório foi consultado para esta consolidação.
-
-### D-022 — D-SF como única fonte oficial
-
-**Decisão:** a partir deste baseline, o repositório `AiltonSantanaReis/D-SF` é o system of record do projeto.
-
-### D-023 — Consolidação documental
-
-Relatórios antigos separados (`CONSTITUTION`, `EXPERIMENTS`, `R0_R1_REPORT`, `R2_REPORT`, `R2_1_REPORT`, `RELEASE_VERIFICATION`) continham informação correta, porém sobreposta.
-
-Para evitar divergência futura, o conteúdo comprovado foi consolidado em cinco documentos canônicos:
+### D-023 — Cinco documentos canônicos
 
 ```text
 README.md
@@ -1676,99 +1019,512 @@ RESEARCH_LEDGER.md
 VERIFICATION.md
 ```
 
-Os antigos relatórios não são importados como fontes ativas concorrentes.
+### D-024 — Preservar namespace `aion` no baseline
 
-Razão:
-
-> O Git history preserva versões; o projeto precisa de uma única verdade ativa por categoria de informação.
-
-### D-024 — Preservar código R0–R2.1 sem rename cosmético nesta importação
-
-O código verificado usa namespace/binários `aion`.
-
-A consolidação não renomeia o código apenas para alinhar branding, porque isso misturaria mudança cosmética com importação do baseline comprovado.
-
-O README declara explicitamente que `aion` é nome interno herdado e não contrato final.
-
-Razão:
-
-> Baseline de auditoria deve minimizar mudanças não necessárias no código que gerou a evidência existente.
+Evitar rename cosmético durante importação do código já testado.
 
 ---
 
-# PARTE IX — DECISION REGISTER COMPACTO
+# PARTE IX — DECISION REGISTER DO BASELINE R0–R2.1
 
-Esta tabela é índice; os detalhes e razões estão nas entradas correspondentes acima.
+| ID | Decisão | Estado no baseline |
+|---|---|---|
+| D-001 | Engine híbrida em vez de representação universal. | HYPOTHESIS |
+| D-002 | Geometria visual como derived representation. | direção |
+| D-003 | Oracle/reference antes de otimização. | método ativo |
+| D-004 | Começar por World independente. | executado R0 |
+| D-005 | Não fabricar GPU evidence. | regra ativa |
+| D-006 | Identity allocation dentro de transaction. | VERIFIED R1 |
+| D-007 | Forward journal separado de undo. | VERIFIED R1 |
+| D-008 | Rollback rejeita divergence. | VERIFIED R1 |
+| D-009 | Não congelar R1 full-hash/full-undo. | regra ativa |
+| D-010 | Workers produzem proposals/patches. | VERIFIED R2 |
+| D-011 | Persistent runtime. | VERIFIED implementation |
+| D-012 | R2 performance PARTIAL. | evidência |
+| D-013 | Inserir R2.1. | concluído |
+| D-014 | Hybrid transaction, uma authority boundary. | VERIFIED R2.1 |
+| D-015 | Persistent parallel publisher. | implementation |
+| D-016 | Fixed page 256 não universal. | FALSIFIED universal |
+| D-017 | No silent precedence. | VERIFIED |
+| D-018 | Scheduling separado de patch storage. | VERIFIED integration |
+| D-019 | Timeout não é pass. | regra ativa |
+| D-020 | R3 liberado. | concluído |
+| D-021 | R3 por bake-off. | método |
+| D-022 | GitHub como source oficial. | posteriormente refinado por D-044 |
+| D-023 | Cinco documentos canônicos. | ativo |
+| D-024 | Preservar `aion` no baseline. | ativo |
+
+---
+
+# PARTE X — R3 SPATIAL KERNEL EXECUTADO
+
+## L-061 — R3 começou pelo oracle e candidatos
+
+BruteForceOracle foi usado como referência de correctness. HGrid mostrou limitações para AABB generalista; WideBVH8 SAH/refit ficou forte em low churn; Morton wide BVH rebuild ficou forte em high churn.
+
+Fixed region partition foi rejeitado. MortonClusterBVH8 não foi promovido devido a memory/update duplication.
+
+## L-062 — Shared Spatial Snapshot
+
+Problema identificado: cada spatial backend duplicar center/half bounds desperdiçava memória e publication work.
+
+### D-025 — Shared Spatial Snapshot como data plane derivado
+
+```text
+Authoritative World
+→ R2.1 Hybrid Transaction
+→ Shared Spatial Snapshot
+→ WideBVH8 / MortonBVH8 views
+```
+
+Snapshot SoA center/half, dense/sparse identity, ~24 B/object dense no modelo estrutural.
+
+R2.1 propagation:
+
+```text
+SpatialChangeSet { dirty_slots, dirty_ranges }
+```
+
+Create/destroy → structural rebuild. Version + structure_revision rejeitam stale/skipped deltas.
+
+## L-063 — 1M spatial medians
+
+```text
+snapshot        40.986 ms
+SAH build     1782.978 ms
+Morton radix    55.231 ms
+publish2         0.924 ms
+SAH2            13.960 ms
+Morton2         51.575 ms
+publish50        2.516 ms
+SAH50         1664.696 ms
+Morton50        54.426 ms
+```
+
+Shared structural memory ~66.0 MB vs duplicated model ~106.0 MB (~37.73% reduction). Não RSS.
+
+## L-064 — Churn-only policy falsificada
+
+`changed_fraction` isolado não explicava winner. Topology debt ajudava, mas não era suficiente.
+
+### D-026 — Spatial policy inclui query demand
+
+```text
+FrameSpatialCost = UpdateCost + QueryCount * QueryCost + Rebuild/SwitchCost
+```
+
+Query count pode inverter o winner mesmo com mesmo churn.
+
+## L-065 — R3.1 async SAH e compact catchup
+
+Initial full catchup ~52.833 ms foi rejeitado.
+
+Compact dirty catchup:
+
+- snapshot copy ~3.508 ms;
+- background SAH ~2969.335 ms;
+- catchup ~9.041 ms.
+
+Mas background interference elevou active Morton update ~43.5%.
+
+### D-027 — Background work não é “grátis”
+
+Unrestricted background scheduling não foi promovido.
+
+Cost policy:
+
+```text
+predicted = update_ms + sampled_query_ms/sample_count * expected_queries
+```
+
+Matched subsequent winner 23/23 synthetic AABB scenarios no escopo testado.
+
+## L-066 — R3.2 Budgeted Spatial Build Scheduler
+
+Cooperative/resumable SAH state machine:
+
+capture → catchup → bounds → binning → scatter/partition → nodes → cleanup.
+
+Execution Budget Scheduler concede somente slack; zero slack → zero maintenance.
+
+100k promoveu ~92 frames com ~1 ms slices; 250k ~292 frames.
+
+1M Morton critical ~54.8 ms/frame → 80/80 frames starved, maintenance 0, correctness preservada.
+
+Dirty-refit queue contínua substituiu batch catchup que podia starvation.
+
+Extreme 1M: 50% dirty/frame ×30 → peak ~10.83M pending; após production stop drenou em 181 nominal 0.5 ms slices; final backlog 0, query equivalence/promotion PASS.
+
+### D-028 — R3 fechado
+
+`VERIFIED — CPU/reference`. Limite: mandatory 1M Morton rebuild/frame ainda >16.67 ms na CPU da sandbox.
+
+---
+
+# PARTE XI — R4 GEOMETRY KERNEL
+
+## L-067 — Neutral math layer antes de Geometry
+
+`Vec3`, `Aabb`, `Ray` extraídos para math neutral, mantendo World/Spatial/Geometry como siblings.
+
+## L-068 — R4A Representation Contract
+
+Capabilities:
+
+- Bounds;
+- RaySurface;
+- SignedDistance.
+
+TriangleReference: Bounds/Ray. AnalyticSdf: all three.
+
+Cube 12 triangles vs analytic box SDF: exact bounds, 882 ray hits equivalent, inside/non-normalized rays testados.
+
+### D-029 — GeometryProvider capability-oriented
+
+Provider não é escolhido por nome/tipo hard-coded no consumer.
+
+## L-069 — R4B Sparse Implicit Geometry
+
+Sparse narrow-band hierarchy, int16 quantized payload, conservative error certificate.
+
+Capped sphere tracing tornou-se resolution-dependent e foi rejeitado. Naive hierarchical child testing também piorou.
+
+### D-030 — Brick DDA + local sphere tracing promovido
+
+100k rays ~138/135/145 ms em 1/32,1/64,1/128 no set testado.
+
+Sphere sparse/dense-int16: 96.9%,55.3%,31.7%; Box: 191.5%,133.1%,80.0%.
+
+Conclusão: sparse não é universalmente menor.
+
+## L-070 — R4C Clustered Triangle
+
+Adjacency-aware clusters, uint8 local indices, contiguous payload, BVH8.
+
+Per-cluster quantization abriu cracks no torus.
+
+### D-031 — Shared resource quantization frame
+
+Shared source vertex decodes identicamente entre clusters. Quantized BVH bounds recebem one-unit outward padding.
+
+64 vertices/124 triangles tornou-se experimental CPU default por tradeoff do sweep, não contrato universal.
+
+## L-071 — R4D Heterogeneous Selection
+
+### D-032 — Hard constraints + explicit objective + Pareto
+
+Weighted magic score rejeitado.
+
+Sphere example:
+
+- Sparse error ~0.0135324, storage ~2,842,910 B;
+- Clustered error ~0.0192412, storage ~46,288 B.
+
+Sparse venceu ray latency nos workloads CPU testados; Clustered venceu memória. Pareto contém ambos.
+
+## L-072 — R4E Online Runtime Telemetry
+
+Observations keyed por handle + revision + workload + device + batch class.
+
+Median/MAD/P90 recent window. Outlier `1,1,1,1,1,1,50` → median1, P90=50.
+
+Always-on per-call timing de microbatch foi falsificado por overhead; sampling foi introduzido.
+
+## L-073 — R4F Safe Online Exploration
+
+Inactive provider improvement não é observável sem executar alternativa/shadow work ou permanecer ignorante.
+
+Exploration opt-in, sem hidden duplicate work.
+
+Refresh age 1/2 com min_observed=3 podia entrar em exploração quase permanente.
+
+### D-033 — Freshness é workload SLA
+
+Não existe universal refresh age ótimo; freshness horizon não deve ser menor que confidence sample requirement.
+
+### D-034 — R4 fechado
+
+R4A–F `VERIFIED — CPU/reference`; nenhuma representação universal promovida.
+
+---
+
+# PARTE XII — R5 DEVICE / BACKEND REFERENCE ARCHITECTURE
+
+## L-074 — Separação central de R5
+
+```text
+World != Geometry != Device Package != Device Work != Backend Command Model
+```
+
+## L-075 — R5A Device Residency Contract
+
+Initial geometry-shaped key foi generalizado.
+
+### D-035 — Generic DeviceResourceKey
+
+```text
+owner { namespace, object_id, revision }
+resource_class
+subresource
+```
+
+Namespaces Geometry/Work/Global. Reference backend para semantics, sem VRAM claim.
+
+Residency: explicit budget, LRU unpinned, pinning, immutable content/key, generational handles, key→slot map, free-list, restore after failed upload.
+
+## L-076 — R5B Geometry Device Packages
+
+`RepresentationArchive` canonical little-endian, sem `memcpy(struct)` ABI.
+
+Sparse/Clustered compilers produzem same generic package model.
+
+Bug real encontrado: staged new subresources usavam sentinel `entries.size()` e podiam sobrescrever slots posteriores. Corrigido com `existed_before` explícito.
+
+### D-036 — Atomic ensure_group
+
+Validate all → plan evictions → stage → publish all; failure restaura tudo.
+
+## L-077 — R5C Device Work Contract
+
+`DeviceWorkPacket`: id, domain, program key, launch mode, dimensions/control resource, resources/access, explicit after, immutable parameters.
+
+Resource-centric hazard tracker substituiu O(P²) packet comparisons; frontier Kahn substituiu rescans.
+
+### D-037 — DeviceWorkPacket é coarse node
+
+100k host packets mostraram ~1s reference planner cost. Fine work deve residir em work-items/indirect/device-generated buffers.
+
+Planner digest:
+
+```text
+9229187388161744994
+```
+
+Launch-control dependency tornou-se explicitamente readable resource.
+
+## L-078 — R5D Backend Capability & Translation
+
+Backend-neutral capability profiles e launch kinds Direct/Indirect/GeneratedSequence/WorkGraph.
+
+### D-038 — Launch semantic lowering assimétrico
+
+- Direct static pode preserve/promote;
+- dynamic Indirect não demote silently para Direct;
+- DeviceGenerated não demote silently para host-driven;
+- Indirect pode promote para generated quando suportado.
+
+Semantic digest separado de backend digest.
+
+Initial descriptor model duplicava binding por use; rejeitado. Unique descriptor table + per-command resource uses promovido.
+
+Reference R5D fingerprints:
+
+```text
+semantic 2894648114337488996
+direct   1822164511422550589
+generated-sequence 14902490109153104665
+work-graph 9850775312450346422
+```
+
+7-run CPU translation medians 100/1k/5k documentados; não representam GPU speed.
+
+R5D final: GCC/Clang 17/17, warnings clean configured set, ASan+UBSan dedicated A-D pass.
+
+---
+
+# PARTE XIII — R5E REAL HARDWARE BRING-UP
+
+## L-079 — Gate philosophy
+
+### D-039 — HARDWARE RESULT requer execução física
+
+Sandbox pode escrever/reference-test adapters, mas VRAM, GPU sync, timestamps, DGC e backend performance só recebem hardware classification após execução fora da sandbox.
+
+Hardware target atual:
+
+```text
+NVIDIA GeForce RTX 3070 Ti
+Driver 610.47
+Vulkan loader 1.4.357
+Device API 1.4.341
+```
+
+## L-080 — HW01 gate iterations e metodologia
+
+Runner v1/v2/v3/v4/v5 expôs problemas de prerequisite discovery, optional CMake assumption, stderr warning handling, MSVC invocation e process lifetime.
+
+Essas falhas foram classificadas como gate/toolchain failures, não GPU failures.
+
+HW01 v6 removeu `--show-all`, adicionou timeouts/Job Object/process-tree safety e isolou implicit layers.
+
+### D-040 — HW01 VERIFIED
+
+Real feature bits confirmaram BDA, synchronization2, timeline semaphore, descriptor indexing/buffer/heap, DGC, mesh/task shader, acceleration structure/ray tracing.
+
+Capability availability ≠ optimality/performance.
+
+## L-081 — HW02 real memory roundtrip
+
+Toolchain gates foram corrigidos até direct `cl.exe /c` + `link.exe` separate response files.
+
+Final hardware path:
+
+```text
+HOST upload 16 MiB
+→ DEVICE_LOCAL
+→ synchronization2
+→ HOST readback 16 MiB
+→ full byte compare
+```
+
+Hashes:
+
+```text
+input  0xc0dd6ba4a0e044c2
+output 0xc0dd6ba4a0e044c2
+```
+
+Validation 0 errors / 0 warnings.
+
+### D-041 — HW02 VERIFIED
+
+Real `VkDevice` + memory roundtrip funcionam no target.
+
+## L-082 — HW03 Direct Compute
+
+Workload:
+
+```text
+1,048,576 uint32
+local_size_x 256
+4096 workgroups
+out[i] = in[i] * 3u + 7u
+```
+
+CPU oracle:
+
+```text
+0x8e2eef1faffc414f
+```
+
+GPU Direct output same; full element compare PASS; validation clean.
+
+### D-042 — HW03 VERIFIED
+
+Primeiro real compute work executado fisicamente pela GPU e comparado a oracle CPU.
+
+## L-083 — HW04 Indirect Compute
+
+Mudança controlada: mesmo input/shader/binding/operation/oracle; apenas launch mechanism trocado.
+
+Device-resident 12-byte control buffer:
+
+```text
+VkDispatchIndirectCommand {4096,1,1}
+```
+
+`vkCmdDispatchIndirect` output:
+
+```text
+0x8e2eef1faffc414f
+```
+
+Same CPU oracle; validation 0/0.
+
+Evidence ZIP SHA-256:
+
+```text
+da327a30d50ebfcc90431d06cd14be585efb0d6b29cb16dadbe308a3eb1faa31
+```
+
+### D-043 — Functional equivalence Direct/Indirect no workload testado
+
+Conclusão permitida: same semantics/output no gate.
+
+Conclusão proibida: performance equivalence/superiority. Timestamps ainda não medidos.
+
+---
+
+# PARTE XIV — GOVERNANÇA REFINADA APÓS R5E-HW04
+
+## L-084 — Correção da política de repositório
+
+A prática real de pesquisa demonstrou que publicar cada experimento diretamente no GitHub durante exploração cria ruído e pode congelar estados não comprovados.
+
+### D-044 — GitHub é registro oficial de milestones; sandbox/local é laboratório ativo
+
+Esta decisão **supersede parcialmente D-022**:
+
+- D-SF GitHub continua sendo registro público oficial dos estados consolidados;
+- desenvolvimento/experimentos permanecem local/sandbox até fechamento de hipótese/gate;
+- `main` recebe snapshots coerentes/verificados, não cada tentativa;
+- failed runners/toolchains podem ser preservados em evidence/ledger quando metodologicamente relevantes, mas não entram como “GPU failure”.
+
+## L-085 — Auditoria documental após HW04
+
+Foi detectado que uma atualização de GitHub havia resumido acidentalmente `ARCHITECTURE.md`, `PROJECT.md`, `RESEARCH_LEDGER.md` e `VERIFICATION.md`.
+
+A redução foi tratada como regressão documental. Conteúdo detalhado foi restaurado e os estados novos foram adicionados sem apagar o baseline.
+
+### D-045 — Documentação canônica não pode ser encurtada por substituição destrutiva
+
+Atualizações futuras devem ser append/supersede orientadas quando o conteúdo antigo ainda tem valor de auditoria. Resumo pertence ao README/estado, não deve apagar ledger/evidence detalhados.
+
+---
+
+# PARTE XV — PRÓXIMA ENTRADA ESPERADA
+
+## L-086 — R5E-HW05 autorizado
+
+**GPU Timestamp & Direct/Indirect Characterization.**
+
+Variáveis que devem permanecer comparáveis a HW03/HW04:
+
+- input;
+- operation;
+- element count;
+- shader;
+- binding baseline;
+- CPU oracle;
+- target GPU.
+
+Adicionar:
+
+- GPU timestamps;
+- repeated samples;
+- warm/cold policy explícita;
+- CPU preparation/record/submit/synchronization quando relevante;
+- median/tail characterization.
+
+### D-046 — Não escolher Direct/Indirect/DGC por preferência
+
+HW05 mede Direct vs Indirect. DGC e descriptor modern paths entram depois como candidatos controlados. O vencedor, se houver, é workload/hardware-specific.
+
+---
+
+# DECISION REGISTER — CONTINUAÇÃO R3–R5E
 
 | ID | Decisão | Estado |
 |---|---|---|
-| D-001 | Pesquisar engine híbrida em vez de uma representação universal. | HYPOTHESIS |
-| D-002 | Tratar geometria visual como representação derivada, não identidade do mundo. | HYPOTHESIS / direção |
-| D-003 | Manter oracle/reference antes de otimizações. | VERIFIED como método usado em R2/R2.1 |
-| D-004 | Começar provando World independente de renderer/mesh/physics. | Executado em R0 |
-| D-005 | Não fabricar evidência de GPU na sandbox. | Regra ativa |
-| D-006 | Identity allocation dentro de CreateEntity transaction. | VERIFIED R1 |
-| D-007 | Forward persisted journal separado de ephemeral undo. | VERIFIED R1 |
-| D-008 | Rollback rejeita World divergente do journal. | VERIFIED R1 |
-| D-009 | Não congelar full-hash/full-undo implementation de R1. | Regra ativa |
-| D-010 | Workers produzem proposals/patches; não mutam World diretamente. | VERIFIED R2 |
-| D-011 | Worker pool/runtime persistente. | VERIFIED R2 implementation |
-| D-012 | R2 performance marcada PARTIAL por patch bottleneck. | Evidência R2 |
-| D-013 | Inserir R2.1 antes de R3. | Concluído |
-| D-014 | Hybrid transaction com múltiplas granularidades e uma authority boundary. | VERIFIED R2.1 |
-| D-015 | Parallel publisher persistente para benchmark justo. | VERIFIED implementation path |
-| D-016 | Fixed page 256 não é solução universal. | FALSIFIED as universal |
-| D-017 | No silent scalar/range precedence. | VERIFIED R2.1 |
-| D-018 | Scheduling semantics separados de patch storage. | VERIFIED integration R2.1 |
-| D-019 | Timeout/instrumentation incompleta não pode ser chamado de pass. | Regra ativa |
-| D-020 | R3 pode começar após R2.1. | Ativo |
-| D-021 | R3 escolherá estrutura por bake-off, não preferência. | Regra próxima fase |
-| D-022 | GitHub D-SF é fonte oficial única do projeto. | Ativo |
-| D-023 | Cinco documentos canônicos; sem relatórios ativos duplicados. | Ativo |
-| D-024 | Preservar código `aion` testado no baseline; naming futuro separado. | Ativo no baseline |
-
----
-
-# PARTE X — DÍVIDA / PERGUNTAS ABERTAS NO MOMENTO DA CENTRALIZAÇÃO
-
-Estas perguntas permanecem abertas e **não devem ser relatadas como resolvidas**:
-
-1. Qual SpatialBackend vence cada distribuição/workload?
-2. Um único backend espacial é suficiente ou a solução deve ser híbrida?
-3. Como declarar disjoint spatial/resource ranges no scheduler sem explodir graph cost?
-4. Como substituir full World SHA-256 por incremental/Merkle sem enfraquecer proof?
-5. Qual modelo de rollback/history escala melhor: bounded window, COW, compressed delta, page snapshots ou combinação?
-6. Como fazer crash-safe journal persistence/recovery?
-7. Como definir floating-point determinism cross-platform?
-8. Como validar Windows/Linux e x86/ARM?
-9. Quando scalar-to-range coalescing deve ser automático?
-10. Existe uma representação intermediária masked-page útil entre scalar e dense range?
-11. Como tratar NUMA/cache affinity?
-12. Como produzir patches na GPU sem perder auditabilidade/authority?
-13. Qual será o contrato real de GeometryProvider?
-14. Como mesh/SDF/voxel/splat coexistirão sem duplicate truth?
-15. Como gerar Physical View diferente de Render View mantendo consistência?
-16. Como medir representational error/quality budget?
-17. Como integrar GPU real e medir timestamps/bandwidth/residency?
-18. Como testar Gaussian/SDF/voxel em produção sem assumir que substituem mesh universalmente?
-19. Em que momento um contrato sobreviveu evidência suficiente para `FOUNDATIONAL`?
-20. Qual naming público final substituirá ou não o namespace interno `aion`?
-
----
-
-# PARTE XI — PRÓXIMA ENTRADA ESPERADA
-
-A próxima entrada de pesquisa deve ser R3 e conter, antes de qualquer benchmark de performance:
-
-1. hipótese formal;
-2. `SpatialBackend` contract;
-3. referência/oracle de query;
-4. geração determinística dos datasets;
-5. candidatos implementados de maneira comparável;
-6. correctness equivalence;
-7. adversarial distributions;
-8. benchmarks;
-9. decisão por workload;
-10. razão para promoção, limitação ou rejeição.
-
-Nenhuma estrutura espacial pode entrar na seção `VERIFIED` do `ARCHITECTURE.md` antes dessa evidência.
+| D-025 | Shared Spatial Snapshot como data plane derivado. | VERIFIED R3 |
+| D-026 | Spatial policy inclui query demand/cost, não churn isolado. | VERIFIED tested scope |
+| D-027 | Background work irrestrito não é grátis. | FALSIFIED universal |
+| D-028 | R3 fechado CPU/reference, com 1M rebuild limitation explícita. | VERIFIED |
+| D-029 | GeometryProvider capability-oriented. | VERIFIED R4A |
+| D-030 | Brick DDA + local sphere tracing no Sparse SDF tested path. | VERIFIED R4B scope |
+| D-031 | Shared resource quantization frame para clustered triangles. | VERIFIED R4C |
+| D-032 | Hard constraints + explicit objective + Pareto. | VERIFIED R4D |
+| D-033 | Freshness/exploration é workload SLA. | VERIFIED mechanism |
+| D-034 | R4 fechado CPU/reference; nenhuma representação universal. | VERIFIED |
+| D-035 | DeviceResourceKey genérico por namespace/object/revision. | VERIFIED reference |
+| D-036 | Atomic `ensure_group`. | VERIFIED reference |
+| D-037 | DeviceWorkPacket é coarse execution node. | VERIFIED reference conclusion |
+| D-038 | Backend lowering assimétrico preserva autonomy semantics. | VERIFIED reference |
+| D-039 | Hardware claim exige hardware execution. | regra ativa |
+| D-040 | HW01 real capability fingerprint. | VERIFIED hardware |
+| D-041 | HW02 real VkDevice/memory roundtrip. | VERIFIED hardware |
+| D-042 | HW03 Direct compute exact CPU oracle. | VERIFIED hardware |
+| D-043 | HW04 Indirect compute functionally equivalent no workload. | VERIFIED hardware correctness |
+| D-044 | Sandbox/local = laboratório; GitHub = milestone record. | regra ativa |
+| D-045 | Não substituir documentos canônicos detalhados por resumo destrutivo. | regra ativa |
+| D-046 | HW05 mede antes de escolher launch path. | próxima fase |

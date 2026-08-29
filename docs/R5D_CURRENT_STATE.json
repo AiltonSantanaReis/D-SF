@@ -1,0 +1,18 @@
+{
+  "stage": "R5D",
+  "status": "VERIFIED_CPU_REFERENCE_TRANSLATION_SCOPE",
+  "tests": {
+    "gcc": "17/17 PASS",
+    "clang": "17/17 PASS",
+    "warnings": 0,
+    "asan_r5a_r5d": "PASS",
+    "ubsan_r5a_r5d": "PASS"
+  },
+  "fingerprints": {
+    "semantic_digest": 2894648114337488996,
+    "direct_backend_digest": 1822164511422550589,
+    "generated_sequence_backend_digest": 14902490109153104665,
+    "work_graph_backend_digest": 9850775312450346422
+  },
+  "hardware_gpu_validation": "NOT_MEASURED"
+}

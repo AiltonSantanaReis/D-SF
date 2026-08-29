@@ -1,0 +1,58 @@
+{
+  "schema": "dsf.r5e.hw04.hardware_result.v1",
+  "status": "PASS",
+  "result_class": "HARDWARE_RESULT",
+  "device_name": "NVIDIA GeForce RTX 3070 Ti",
+  "vendor_id": 4318,
+  "device_id": 9346,
+  "api_version": "1.4.341",
+  "queue_family_index": 2,
+  "launch_mode": "Indirect",
+  "binding_model": "descriptor_set_baseline",
+  "operation": "out[i] = in[i] * 3u + 7u",
+  "elements": 1048576,
+  "payload_bytes_per_buffer": 4194304,
+  "local_size_x": 256,
+  "workgroup_count_x": 4096,
+  "control_source": "resident_device_buffer",
+  "indirect_command_bytes": 12,
+  "indirect_workgroup_x": 4096,
+  "indirect_workgroup_y": 1,
+  "indirect_workgroup_z": 1,
+  "indirect_command_fnv1a64": "0x3891ae3c62606753",
+  "input_fnv1a64": "0xac41f8629b52fce0",
+  "expected_fnv1a64": "0x8e2eef1faffc414f",
+  "output_fnv1a64": "0x8e2eef1faffc414f",
+  "cpu_oracle_match": true,
+  "synchronization2_enabled": true,
+  "descriptor_set_count": 1,
+  "storage_buffer_descriptor_count": 2,
+  "push_constant_bytes": 4,
+  "validation_errors": 0,
+  "validation_warnings": 0,
+  "memory_before": {
+      "budget_supported": true,
+      "heaps": [
+        {"index": 0, "size": 8406433792, "flags": 1, "budget": 7601127424, "usage": 0},
+        {"index": 1, "size": 17139396608, "flags": 0, "budget": 16334090240, "usage": 0},
+        {"index": 2, "size": 224395264, "flags": 1, "budget": 210296832, "usage": 14098432}
+      ]
+    },
+  "memory_allocated": {
+      "budget_supported": true,
+      "heaps": [
+        {"index": 0, "size": 8406433792, "flags": 1, "budget": 7601127424, "usage": 11579392},
+        {"index": 1, "size": 17139396608, "flags": 0, "budget": 16334090240, "usage": 20766720},
+        {"index": 2, "size": 224395264, "flags": 1, "budget": 210296832, "usage": 14098432}
+      ]
+    },
+  "memory_after_free": {
+      "budget_supported": true,
+      "heaps": [
+        {"index": 0, "size": 8406433792, "flags": 1, "budget": 7601127424, "usage": 3125248},
+        {"index": 1, "size": 17139396608, "flags": 0, "budget": 16334090240, "usage": 16568320},
+        {"index": 2, "size": 224395264, "flags": 1, "budget": 210296832, "usage": 14098432}
+      ]
+    },
+  "validation_messages": [  ]
+}

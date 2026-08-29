@@ -1,0 +1,64 @@
+{
+  "schema": "dsf.r5e.hw02.closeout.v1",
+  "gate": "R5E-HW02",
+  "status": "VERIFIED",
+  "result_class": "HARDWARE_RESULT",
+  "evidence_zip_sha256": "d0c5549cc7c4aac5ddb7a395197cf0b319ae0005bfb2baf403958d58aa34acaf",
+  "hw01_evidence_sha256": "f2af859183bb926598b7e90356294d8cac3f92e577ae35f180e8088397fac9d6",
+  "baseline_r5d_sha256": "f1dc9d2b82a3d5a4133cb98cc4426274ef14d93b944de2496bc9f5705ee7131e",
+  "build": {
+    "msvc": "14.51.36231",
+    "visual_studio": "18 Build Tools",
+    "windows_sdk": "10.0.26100.0",
+    "vulkan_sdk": "1.4.357.0",
+    "compile_exit": 0,
+    "link_exit": 0,
+    "probe_exit": 0,
+    "duration_seconds": 3.705,
+    "internal_hash_files": 18,
+    "internal_hash_mismatches": 0
+  },
+  "hardware": {
+    "device_name": "NVIDIA GeForce RTX 3070 Ti",
+    "vendor_id": "0x10de",
+    "device_id": "0x2482",
+    "api_version": "1.4.341",
+    "queue_family_index": 2
+  },
+  "features_enabled": {
+    "synchronization2": true
+  },
+  "transfer": {
+    "payload_bytes": 16777216,
+    "input_fnv1a64": "0xc0dd6ba4a0e044c2",
+    "output_fnv1a64": "0xc0dd6ba4a0e044c2",
+    "roundtrip_match": true,
+    "allocations": {
+      "upload": {"requirements_size": 16777216, "alignment": 16, "memory_type": 4},
+      "device": {"requirements_size": 16777216, "alignment": 16, "memory_type": 1},
+      "readback": {"requirements_size": 16777216, "alignment": 16, "memory_type": 4}
+    }
+  },
+  "validation": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "memory_budget": {
+    "supported": true,
+    "heaps_mib": [
+      {"index": 0, "size": 8017.0, "budget": 7249.0, "usage_before": 0.0, "usage_allocated": 18.98046875, "usage_after_free": 2.98046875},
+      {"index": 1, "size": 16345.40234375, "budget": 15577.40234375, "usage_before": 0.0, "usage_allocated": 43.80078125, "usage_after_free": 13.80078125},
+      {"index": 2, "size": 214.0, "budget": 200.5546875, "usage_before": 13.4453125, "usage_allocated": 13.4453125, "usage_after_free": 13.4453125}
+    ],
+    "interpretation": "live driver/WDDM telemetry; not exact per-allocation accounting"
+  },
+  "non_claims": [
+    "no compute shader execution",
+    "no descriptor binding runtime validation",
+    "no indirect or DGC execution",
+    "no GPU timestamp measurement",
+    "no bandwidth characterization",
+    "no eviction characterization",
+    "no relative performance claim"
+  ]
+}

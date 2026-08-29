@@ -1,0 +1,104 @@
+{
+  "stage": "R4 CPU/reference closeout",
+  "status": "VERIFIED",
+  "r4c": {
+    "triangles": 4418,
+    "clusters": 47,
+    "storage_bytes": 46076,
+    "source_raw_bytes": 80664,
+    "max_error": 4.32196e-05,
+    "max_quant_t_error": 8.46386e-06,
+    "torus_max_error": 4.57764e-05
+  },
+  "r4d": {
+    "sparse_storage_bytes": 2842910,
+    "clustered_storage_bytes": 2880
+  },
+  "r4f_inactive_provider_drift_phase_sweep": [
+    {
+      "refresh_age": "3",
+      "trials": "128",
+      "explore_mean": "168.211",
+      "pre_regret_mean": "81.6328",
+      "post_regret_mean": "41.2773",
+      "detect_obs_p50": "1",
+      "detect_obs_p90": "4",
+      "detect_obs_max": "4",
+      "detect_exploit_p50": "5",
+      "detect_exploit_p90": "8",
+      "detect_exploit_max": "8"
+    },
+    {
+      "refresh_age": "4",
+      "trials": "128",
+      "explore_mean": "147.75",
+      "pre_regret_mean": "71.625",
+      "post_regret_mean": "36.3125",
+      "detect_obs_p50": "1",
+      "detect_obs_p90": "5",
+      "detect_obs_max": "5",
+      "detect_exploit_p50": "5",
+      "detect_exploit_p90": "9",
+      "detect_exploit_max": "9"
+    },
+    {
+      "refresh_age": "8",
+      "trials": "128",
+      "explore_mean": "99.9844",
+      "pre_regret_mean": "48.2344",
+      "post_regret_mean": "25.0938",
+      "detect_obs_p50": "3",
+      "detect_obs_p90": "8",
+      "detect_obs_max": "9",
+      "detect_exploit_p50": "7",
+      "detect_exploit_p90": "12",
+      "detect_exploit_max": "13"
+    },
+    {
+      "refresh_age": "16",
+      "trials": "128",
+      "explore_mean": "61.8281",
+      "pre_regret_mean": "29.5781",
+      "post_regret_mean": "17.4688",
+      "detect_obs_p50": "8",
+      "detect_obs_p90": "15",
+      "detect_obs_max": "17",
+      "detect_exploit_p50": "12",
+      "detect_exploit_p90": "19",
+      "detect_exploit_max": "21"
+    },
+    {
+      "refresh_age": "32",
+      "trials": "128",
+      "explore_mean": "36.375",
+      "pre_regret_mean": "16.9922",
+      "post_regret_mean": "14.3945",
+      "detect_obs_p50": "14",
+      "detect_obs_p90": "29",
+      "detect_obs_max": "33",
+      "detect_exploit_p50": "18",
+      "detect_exploit_p90": "33",
+      "detect_exploit_max": "37"
+    },
+    {
+      "refresh_age": "64",
+      "trials": "128",
+      "explore_mean": "21.375",
+      "pre_regret_mean": "9.79688",
+      "post_regret_mean": "19.5703",
+      "detect_obs_p50": "33",
+      "detect_obs_p90": "59",
+      "detect_obs_max": "65",
+      "detect_exploit_p50": "37",
+      "detect_exploit_p90": "63",
+      "detect_exploit_max": "69"
+    }
+  ],
+  "validation": {
+    "gcc_ctest": "13/13 PASS",
+    "clang_ctest": "13/13 PASS",
+    "warnings": 0,
+    "asan": "PASS R4A-R4F",
+    "ubsan": "PASS R4A-R4F"
+  }
+}

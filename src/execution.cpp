@@ -2,7 +2,10 @@
 
 #include <algorithm>
 #include <condition_variable>
+#include <chrono>
+#include <cmath>
 #include <deque>
+#include <ctime>
 #include <future>
 #include <limits>
 #include <mutex>
@@ -13,6 +16,15 @@
 
 namespace aion {
 namespace {
+
+[[nodiscard]] double thread_cpu_now_ms() noexcept {
+#if defined(__linux__) && defined(CLOCK_THREAD_CPUTIME_ID)
+    timespec ts{};
+    if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) == 0)
+        return static_cast<double>(ts.tv_sec) * 1000.0 + static_cast<double>(ts.tv_nsec) / 1.0e6;
+#endif
+    return static_cast<double>(std::clock()) * 1000.0 / static_cast<double>(CLOCKS_PER_SEC);
+}
 
 [[nodiscard]] bool has_hazard(const SystemSpec& a, const SystemSpec& b) noexcept {
     const auto a_conflicts = a.writes.intersects(b.reads | b.writes);
@@ -445,6 +457,40 @@ ExecutionResult ExecutionRuntime::execute_patched(
     return result;
 }
 
+
+MaintenanceRunResult ExecutionBudgetScheduler::run_maintenance(
+    const MaintenanceBudget& budget,
+    const CooperativeTask& task) {
+    MaintenanceRunResult result{};
+    if (!task || !std::isfinite(budget.frame_budget_ms) || !std::isfinite(budget.critical_path_ms) ||
+        !std::isfinite(budget.safety_margin_ms) || !std::isfinite(budget.max_maintenance_slice_ms) ||
+        budget.frame_budget_ms < 0.0 || budget.critical_path_ms < 0.0 ||
+        budget.safety_margin_ms < 0.0 || budget.max_maintenance_slice_ms < 0.0) {
+        result.ok = false;
+        result.error = "invalid maintenance budget or task";
+        return result;
+    }
+
+    result.available_ms = std::max(0.0,
+        budget.frame_budget_ms - budget.critical_path_ms - budget.safety_margin_ms);
+    result.granted_ms = std::min(result.available_ms, budget.max_maintenance_slice_ms);
+    if (result.granted_ms <= 0.0) return result;
+
+    const auto begin = std::chrono::steady_clock::now();
+    const double cpu_begin = thread_cpu_now_ms();
+    const auto progress = task(result.granted_ms);
+    const double cpu_end = thread_cpu_now_ms();
+    const auto end = std::chrono::steady_clock::now();
+    result.actual_ms = std::chrono::duration<double, std::milli>(end - begin).count();
+    result.actual_cpu_ms = std::max(0.0, cpu_end - cpu_begin);
+    result.ran = true;
+    result.ok = progress.ok;
+    result.complete = progress.complete;
+    result.work_units = progress.work_units;
+    result.error = progress.error;
+    return result;
+}
+
 ExecutionResult ExecutionKernel::execute(
     const ExecutionPlan& plan,
     World& world,
@@ -452,6 +498,26 @@ ExecutionResult ExecutionKernel::execute(
     ChangeJournal* journal) {
     ExecutionRuntime runtime(options);
     return runtime.execute(plan, world, journal);
+}
+
+BatchObservation ExecutionKernel::observe_batch(
+    ExecutionDevice device,
+    std::uint64_t workload_id,
+    std::size_t work_units,
+    const std::function<void()>& task) {
+    BatchObservation observation{};
+    observation.device = device;
+    observation.workload_id = workload_id;
+    observation.work_units = work_units;
+    if (!task) return observation;
+    const auto begin = std::chrono::steady_clock::now();
+    const double cpu_begin = thread_cpu_now_ms();
+    task();
+    const double cpu_end = thread_cpu_now_ms();
+    const auto end = std::chrono::steady_clock::now();
+    observation.wall_ms = std::chrono::duration<double, std::milli>(end - begin).count();
+    observation.cpu_ms = std::max(0.0, cpu_end - cpu_begin);
+    return observation;
 }
 
 } // namespace aion

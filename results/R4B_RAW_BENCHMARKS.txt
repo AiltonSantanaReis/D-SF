@@ -1,0 +1,60 @@
+## resolution
+div=32 voxel=0.0312 build_ms=14.1315 roots=1 upper=1 lower=20 leaves=511 sparse_bytes=753734 dense_f32_bytes=1556068 dense_i16_bytes=778034 ratio_f32=0.4844 ratio_i16=0.9688 topology_bytes=8696 payload_bytes=745038 source_samples=373864 dense_samples=389017 observed_error=0.0075 declared_error=0.0271 sample200k_ms=71.6741 ray100k_ms=77.3298 ray_hits=53084
+div=64 voxel=0.0156 build_ms=55.5290 roots=7 upper=7 lower=93 leaves=1927 sparse_bytes=2842910 dense_f32_bytes=10285412 dense_i16_bytes=5142706 ratio_f32=0.2764 ratio_i16=0.5528 topology_bytes=33344 payload_bytes=2809566 source_samples=1411191 dense_samples=2571353 observed_error=0.0038 declared_error=0.0135 sample200k_ms=50.3527 ray100k_ms=76.5217 ray_hits=51875
+div=128 voxel=0.0078 build_ms=253.3409 roots=20 upper=20 lower=350 leaves=7985 sparse_bytes=11779090 dense_f32_bytes=74438500 dense_i16_bytes=37219250 ratio_f32=0.1582 ratio_i16=0.3165 topology_bytes=136960 payload_bytes=11642130 source_samples=5844772 dense_samples=18609625 observed_error=0.0019 declared_error=0.0068 sample200k_ms=55.4375 ray100k_ms=102.2813 ray_hits=50925
+---
+div=32 voxel=0.0312 build_ms=26.6756 roots=1 upper=1 lower=20 leaves=511 sparse_bytes=753734 dense_f32_bytes=1556068 dense_i16_bytes=778034 ratio_f32=0.4844 ratio_i16=0.9688 topology_bytes=8696 payload_bytes=745038 source_samples=373864 dense_samples=389017 observed_error=0.0075 declared_error=0.0271 sample200k_ms=67.2892 ray100k_ms=90.2876 ray_hits=53084
+div=64 voxel=0.0156 build_ms=72.4416 roots=7 upper=7 lower=93 leaves=1927 sparse_bytes=2842910 dense_f32_bytes=10285412 dense_i16_bytes=5142706 ratio_f32=0.2764 ratio_i16=0.5528 topology_bytes=33344 payload_bytes=2809566 source_samples=1411191 dense_samples=2571353 observed_error=0.0038 declared_error=0.0135 sample200k_ms=48.8358 ray100k_ms=80.8738 ray_hits=51875
+div=128 voxel=0.0078 build_ms=248.5185 roots=20 upper=20 lower=350 leaves=7985 sparse_bytes=11779090 dense_f32_bytes=74438500 dense_i16_bytes=37219250 ratio_f32=0.1582 ratio_i16=0.3165 topology_bytes=136960 payload_bytes=11642130 source_samples=5844772 dense_samples=18609625 observed_error=0.0019 declared_error=0.0068 sample200k_ms=48.5416 ray100k_ms=90.5128 ray_hits=50925
+---
+div=32 voxel=0.0312 build_ms=14.6773 roots=1 upper=1 lower=20 leaves=511 sparse_bytes=753734 dense_f32_bytes=1556068 dense_i16_bytes=778034 ratio_f32=0.4844 ratio_i16=0.9688 topology_bytes=8696 payload_bytes=745038 source_samples=373864 dense_samples=389017 observed_error=0.0075 declared_error=0.0271 sample200k_ms=78.6782 ray100k_ms=86.1434 ray_hits=53084
+div=64 voxel=0.0156 build_ms=71.3874 roots=7 upper=7 lower=93 leaves=1927 sparse_bytes=2842910 dense_f32_bytes=10285412 dense_i16_bytes=5142706 ratio_f32=0.2764 ratio_i16=0.5528 topology_bytes=33344 payload_bytes=2809566 source_samples=1411191 dense_samples=2571353 observed_error=0.0038 declared_error=0.0135 sample200k_ms=56.4968 ray100k_ms=92.2683 ray_hits=51875
+div=128 voxel=0.0078 build_ms=245.9267 roots=20 upper=20 lower=350 leaves=7985 sparse_bytes=11779090 dense_f32_bytes=74438500 dense_i16_bytes=37219250 ratio_f32=0.1582 ratio_i16=0.3165 topology_bytes=136960 payload_bytes=11642130 source_samples=5844772 dense_samples=18609625 observed_error=0.0019 declared_error=0.0068 sample200k_ms=53.9227 ray100k_ms=120.9843 ray_hits=50925
+
+## shape
+shape=sphere div=32 build_ms=16.4393 leaves=511 lower=20 upper=1 sparse=753734 dense_f32=1556068 dense_i16=778034 ratio_f32=0.4844 ratio_i16=0.9688 source_ratio=0.9610
+shape=sphere div=64 build_ms=52.0407 leaves=1927 lower=93 upper=7 sparse=2842910 dense_f32=10285412 dense_i16=5142706 ratio_f32=0.2764 ratio_i16=0.5528 source_ratio=0.5488
+shape=sphere div=128 build_ms=239.0071 leaves=7985 lower=350 upper=20 sparse=11779090 dense_f32=74438500 dense_i16=37219250 ratio_f32=0.1582 ratio_i16=0.3165 source_ratio=0.3141
+shape=box div=32 build_ms=25.0263 leaves=443 lower=17 upper=1 sparse=653430 dense_f32=682404 dense_i16=341202 ratio_f32=0.9575 ratio_i16=1.9151 source_ratio=1.8998
+shape=box div=64 build_ms=91.3244 leaves=1895 lower=60 upper=2 sparse=2794750 dense_f32=4200420 dense_i16=2100210 ratio_f32=0.6654 ratio_i16=1.3307 source_ratio=1.3193
+shape=box div=128 build_ms=364.4723 leaves=7919 lower=267 upper=12 sparse=11679494 dense_f32=29189220 dense_i16=14594610 ratio_f32=0.4001 ratio_i16=0.8003 source_ratio=0.7936
+---
+shape=sphere div=32 build_ms=13.3541 leaves=511 lower=20 upper=1 sparse=753734 dense_f32=1556068 dense_i16=778034 ratio_f32=0.4844 ratio_i16=0.9688 source_ratio=0.9610
+shape=sphere div=64 build_ms=61.1250 leaves=1927 lower=93 upper=7 sparse=2842910 dense_f32=10285412 dense_i16=5142706 ratio_f32=0.2764 ratio_i16=0.5528 source_ratio=0.5488
+shape=sphere div=128 build_ms=264.7794 leaves=7985 lower=350 upper=20 sparse=11779090 dense_f32=74438500 dense_i16=37219250 ratio_f32=0.1582 ratio_i16=0.3165 source_ratio=0.3141
+shape=box div=32 build_ms=23.6618 leaves=443 lower=17 upper=1 sparse=653430 dense_f32=682404 dense_i16=341202 ratio_f32=0.9575 ratio_i16=1.9151 source_ratio=1.8998
+shape=box div=64 build_ms=82.9178 leaves=1895 lower=60 upper=2 sparse=2794750 dense_f32=4200420 dense_i16=2100210 ratio_f32=0.6654 ratio_i16=1.3307 source_ratio=1.3193
+shape=box div=128 build_ms=388.9648 leaves=7919 lower=267 upper=12 sparse=11679494 dense_f32=29189220 dense_i16=14594610 ratio_f32=0.4001 ratio_i16=0.8003 source_ratio=0.7936
+---
+shape=sphere div=32 build_ms=13.6748 leaves=511 lower=20 upper=1 sparse=753734 dense_f32=1556068 dense_i16=778034 ratio_f32=0.4844 ratio_i16=0.9688 source_ratio=0.9610
+shape=sphere div=64 build_ms=59.8704 leaves=1927 lower=93 upper=7 sparse=2842910 dense_f32=10285412 dense_i16=5142706 ratio_f32=0.2764 ratio_i16=0.5528 source_ratio=0.5488
+shape=sphere div=128 build_ms=280.2953 leaves=7985 lower=350 upper=20 sparse=11779090 dense_f32=74438500 dense_i16=37219250 ratio_f32=0.1582 ratio_i16=0.3165 source_ratio=0.3141
+shape=box div=32 build_ms=29.8234 leaves=443 lower=17 upper=1 sparse=653430 dense_f32=682404 dense_i16=341202 ratio_f32=0.9575 ratio_i16=1.9151 source_ratio=1.8998
+shape=box div=64 build_ms=124.7773 leaves=1895 lower=60 upper=2 sparse=2794750 dense_f32=4200420 dense_i16=2100210 ratio_f32=0.6654 ratio_i16=1.3307 source_ratio=1.3193
+shape=box div=128 build_ms=408.6912 leaves=7919 lower=267 upper=12 sparse=11679494 dense_f32=29189220 dense_i16=14594610 ratio_f32=0.4001 ratio_i16=0.8003 source_ratio=0.7936
+
+## scale
+radius=1.0000 build_ms=16.4564 leaves=511 sparse=753734 dense_f32=1556068 dense_i16=778034 ratio_f32=0.4844 ratio_i16=0.9688 source_samples=373864 dense_samples=389017
+radius=2.0000 build_ms=71.4255 leaves=1927 sparse=2842910 dense_f32=10285412 dense_i16=5142706 ratio_f32=0.2764 ratio_i16=0.5528 source_samples=1411191 dense_samples=2571353
+radius=4.0000 build_ms=260.2519 leaves=7985 sparse=11779090 dense_f32=74438500 dense_i16=37219250 ratio_f32=0.1582 ratio_i16=0.3165 source_samples=5844772 dense_samples=18609625
+---
+radius=1.0000 build_ms=14.3803 leaves=511 sparse=753734 dense_f32=1556068 dense_i16=778034 ratio_f32=0.4844 ratio_i16=0.9688 source_samples=373864 dense_samples=389017
+radius=2.0000 build_ms=58.9203 leaves=1927 sparse=2842910 dense_f32=10285412 dense_i16=5142706 ratio_f32=0.2764 ratio_i16=0.5528 source_samples=1411191 dense_samples=2571353
+radius=4.0000 build_ms=265.3231 leaves=7985 sparse=11779090 dense_f32=74438500 dense_i16=37219250 ratio_f32=0.1582 ratio_i16=0.3165 source_samples=5844772 dense_samples=18609625
+---
+radius=1.0000 build_ms=13.8741 leaves=511 sparse=753734 dense_f32=1556068 dense_i16=778034 ratio_f32=0.4844 ratio_i16=0.9688 source_samples=373864 dense_samples=389017
+radius=2.0000 build_ms=88.8533 leaves=1927 sparse=2842910 dense_f32=10285412 dense_i16=5142706 ratio_f32=0.2764 ratio_i16=0.5528 source_samples=1411191 dense_samples=2571353
+radius=4.0000 build_ms=268.1720 leaves=7985 sparse=11779090 dense_f32=74438500 dense_i16=37219250 ratio_f32=0.1582 ratio_i16=0.3165 source_samples=5844772 dense_samples=18609625
+
+## dense_vs_sparse
+div=32 dense_build_ms=17.9857 sparse_build_ms=14.4256 dense_bytes=778034 sparse_bytes=753734 dense_query200k_ms=3.8862 sparse_query200k_ms=71.9553 query_ratio=18.5157 sink=17267.7734
+div=64 dense_build_ms=106.6830 sparse_build_ms=78.5952 dense_bytes=5142706 sparse_bytes=2842910 dense_query200k_ms=8.3537 sparse_query200k_ms=49.9008 query_ratio=5.9735 sink=8632.5879
+div=128 dense_build_ms=770.9106 sparse_build_ms=273.7448 dense_bytes=37219250 sparse_bytes=11779090 dense_query200k_ms=13.1676 sparse_query200k_ms=52.5681 query_ratio=3.9922 sink=4329.1089
+---
+div=32 dense_build_ms=24.0310 sparse_build_ms=13.7398 dense_bytes=778034 sparse_bytes=753734 dense_query200k_ms=3.8590 sparse_query200k_ms=59.0282 query_ratio=15.2961 sink=17267.7734
+div=64 dense_build_ms=118.5000 sparse_build_ms=55.8700 dense_bytes=5142706 sparse_bytes=2842910 dense_query200k_ms=7.8374 sparse_query200k_ms=52.9087 query_ratio=6.7508 sink=8632.5879
+div=128 dense_build_ms=887.1905 sparse_build_ms=270.9105 dense_bytes=37219250 sparse_bytes=11779090 dense_query200k_ms=17.1021 sparse_query200k_ms=60.0867 query_ratio=3.5134 sink=4329.1089
+---
+div=32 dense_build_ms=54.1662 sparse_build_ms=25.7942 dense_bytes=778034 sparse_bytes=753734 dense_query200k_ms=5.1005 sparse_query200k_ms=55.3777 query_ratio=10.8574 sink=17267.7734
+div=64 dense_build_ms=98.5543 sparse_build_ms=73.1389 dense_bytes=5142706 sparse_bytes=2842910 dense_query200k_ms=8.0277 sparse_query200k_ms=41.6550 query_ratio=5.1889 sink=8632.5879
+div=128 dense_build_ms=717.3239 sparse_build_ms=230.9140 dense_bytes=37219250 sparse_bytes=11779090 dense_query200k_ms=13.2885 sparse_query200k_ms=41.2590 query_ratio=3.1049 sink=4329.1089

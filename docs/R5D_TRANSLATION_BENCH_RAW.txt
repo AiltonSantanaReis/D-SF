@@ -1,0 +1,12 @@
+count=100 mode=direct ms=0.04672 commands=100 descriptors=1 uses=100 digest=7869873613212480635
+count=100 mode=indirect ms=0.034081 commands=100 descriptors=1 uses=100 digest=2929145676362224815
+count=100 mode=generated_sequence ms=0.031197 commands=100 descriptors=1 uses=100 digest=6194454289129003595
+count=100 mode=work_graph ms=0.031137 commands=100 descriptors=1 uses=100 digest=9969912779465489651
+count=1000 mode=direct ms=0.351709 commands=1000 descriptors=1 uses=1000 digest=2266055286379632290
+count=1000 mode=indirect ms=0.355195 commands=1000 descriptors=1 uses=1000 digest=16399538913705503018
+count=1000 mode=generated_sequence ms=0.341453 commands=1000 descriptors=1 uses=1000 digest=11120227114860940658
+count=1000 mode=work_graph ms=0.313942 commands=1000 descriptors=1 uses=1000 digest=11895331486919851022
+count=5000 mode=direct ms=2.14265 commands=5000 descriptors=1 uses=5000 digest=12171608134169578309
+count=5000 mode=indirect ms=1.93246 commands=5000 descriptors=1 uses=5000 digest=1200788895547091565
+count=5000 mode=generated_sequence ms=1.87968 commands=5000 descriptors=1 uses=5000 digest=6251516073293594549
+count=5000 mode=work_graph ms=1.85441 commands=5000 descriptors=1 uses=5000 digest=179603018757575681

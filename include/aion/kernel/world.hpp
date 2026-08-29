@@ -1,5 +1,7 @@
 #pragma once
 
+#include "aion/kernel/math.hpp"
+
 #include <array>
 #include <cstdint>
 #include <optional>
@@ -12,14 +14,6 @@ namespace aion {
 
 using EntityId = std::uint64_t;
 using TransactionId = std::uint64_t;
-
-struct Vec3 {
-    float x{};
-    float y{};
-    float z{};
-
-    friend bool operator==(const Vec3&, const Vec3&) = default;
-};
 
 struct EntityState {
     bool alive{false};

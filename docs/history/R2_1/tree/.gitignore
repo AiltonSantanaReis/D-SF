@@ -1,0 +1,39 @@
+# CMake / build outputs
+/build/
+/build-*/
+/cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Compiler / runtime artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.pdb
+*.out
+
+# Benchmark / journal generated data
+*.journal
+*.bin
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Sanitizer / profiler output
+asan*
+ubsan*
+tsan*
+*.profraw
+*.profdata

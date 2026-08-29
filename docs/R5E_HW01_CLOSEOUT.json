@@ -1,0 +1,181 @@
+{
+  "schema": "dsf.r5e.hw01.closeout.v1",
+  "gate": "R5E-HW01",
+  "status": "VERIFIED",
+  "result_class": "HARDWARE_RESULT",
+  "evidence_zip_sha256": "f2af859183bb926598b7e90356294d8cac3f92e577ae35f180e8088397fac9d6",
+  "baseline_r5d_sha256": "f1dc9d2b82a3d5a4133cb98cc4426274ef14d93b944de2496bc9f5705ee7131e",
+  "hardware": {
+    "device_name": "NVIDIA GeForce RTX 3070 Ti",
+    "vendor_id": "0x10de",
+    "device_id": "0x2482",
+    "vram_mib_nvidia_smi": 8192,
+    "driver": "610.47",
+    "vulkan_loader": "1.4.357",
+    "device_api": "1.4.341",
+    "conformance": "1.4.3.3",
+    "timestamp_compute_and_graphics": true,
+    "timestamp_period_ns": 1
+  },
+  "features": {
+    "bufferDeviceAddress": true,
+    "timelineSemaphore": true,
+    "descriptorIndexing": true,
+    "synchronization2": true,
+    "dynamicRendering": true,
+    "descriptorBuffer": true,
+    "descriptorHeap": true,
+    "deviceGeneratedCommands": true,
+    "dynamicGeneratedPipelineLayout": true,
+    "meshShader": true,
+    "taskShader": true,
+    "accelerationStructure": true,
+    "rayTracingPipeline": true
+  },
+  "extensions": {
+    "VK_EXT_device_generated_commands": true,
+    "VK_EXT_descriptor_heap": true,
+    "VK_EXT_descriptor_buffer": true,
+    "VK_EXT_memory_budget": true,
+    "VK_KHR_buffer_device_address": true,
+    "VK_KHR_synchronization2": true,
+    "VK_KHR_timeline_semaphore": true,
+    "VK_EXT_mesh_shader": true,
+    "VK_KHR_acceleration_structure": true,
+    "VK_KHR_ray_tracing_pipeline": true
+  },
+  "queues": [
+    {
+      "index": 0,
+      "count": 16,
+      "flags": [
+        "VK_QUEUE_GRAPHICS_BIT",
+        "VK_QUEUE_COMPUTE_BIT",
+        "VK_QUEUE_TRANSFER_BIT",
+        "VK_QUEUE_SPARSE_BINDING_BIT"
+      ],
+      "timestamp_valid_bits": 64
+    },
+    {
+      "index": 1,
+      "count": 2,
+      "flags": [
+        "VK_QUEUE_TRANSFER_BIT",
+        "VK_QUEUE_SPARSE_BINDING_BIT"
+      ],
+      "timestamp_valid_bits": 64
+    },
+    {
+      "index": 2,
+      "count": 8,
+      "flags": [
+        "VK_QUEUE_COMPUTE_BIT",
+        "VK_QUEUE_TRANSFER_BIT",
+        "VK_QUEUE_SPARSE_BINDING_BIT"
+      ],
+      "timestamp_valid_bits": 64
+    },
+    {
+      "index": 3,
+      "count": 1,
+      "flags": [
+        "VK_QUEUE_TRANSFER_BIT",
+        "VK_QUEUE_SPARSE_BINDING_BIT",
+        "VK_QUEUE_VIDEO_DECODE_BIT_KHR"
+      ],
+      "timestamp_valid_bits": 32
+    },
+    {
+      "index": 4,
+      "count": 1,
+      "flags": [
+        "VK_QUEUE_TRANSFER_BIT",
+        "VK_QUEUE_SPARSE_BINDING_BIT",
+        "VK_QUEUE_VIDEO_ENCODE_BIT_KHR"
+      ],
+      "timestamp_valid_bits": 32
+    },
+    {
+      "index": 5,
+      "count": 1,
+      "flags": [
+        "VK_QUEUE_TRANSFER_BIT",
+        "VK_QUEUE_SPARSE_BINDING_BIT",
+        "VK_QUEUE_OPTICAL_FLOW_BIT_NV"
+      ],
+      "timestamp_valid_bits": 64
+    }
+  ],
+  "descriptor_heap_properties": {
+    "samplerHeapAlignment": 32,
+    "resourceHeapAlignment": 32,
+    "maxSamplerHeapSize": 131072,
+    "maxResourceHeapSize": 33554432,
+    "minSamplerHeapReservedRange": 512,
+    "minSamplerHeapReservedRangeWithEmbedded": 65536,
+    "minResourceHeapReservedRange": 96768,
+    "samplerDescriptorSize": 32,
+    "imageDescriptorSize": 32,
+    "bufferDescriptorSize": 16,
+    "samplerDescriptorAlignment": 32,
+    "imageDescriptorAlignment": 32,
+    "bufferDescriptorAlignment": 8,
+    "maxPushDataSize": 256,
+    "imageCaptureReplayOpaqueDataSize": 8,
+    "maxDescriptorHeapEmbeddedSamplers": 2032,
+    "samplerYcbcrConversionCount": 3,
+    "sparseDescriptorHeaps": true,
+    "protectedDescriptorHeaps": false
+  },
+  "device_generated_commands_properties": {
+    "maxIndirectPipelineCount": 16384,
+    "maxIndirectShaderObjectCount": 16384,
+    "maxIndirectSequenceCount": 4194303,
+    "maxIndirectCommandsTokenCount": 32,
+    "maxIndirectCommandsTokenOffset": 4294967295,
+    "maxIndirectCommandsIndirectStride": 4294967295,
+    "supportedIndirectCommandsInputModes": [
+      "VK_INDIRECT_COMMANDS_INPUT_MODE_VULKAN_INDEX_BUFFER_EXT",
+      "VK_INDIRECT_COMMANDS_INPUT_MODE_DXGI_INDEX_BUFFER_EXT"
+    ],
+    "supportedIndirectCommandsShaderStages": [
+      "VK_SHADER_STAGE_VERTEX_BIT",
+      "VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT",
+      "VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT",
+      "VK_SHADER_STAGE_GEOMETRY_BIT",
+      "VK_SHADER_STAGE_FRAGMENT_BIT",
+      "VK_SHADER_STAGE_COMPUTE_BIT",
+      "VK_SHADER_STAGE_TASK_BIT_EXT",
+      "VK_SHADER_STAGE_MESH_BIT_EXT"
+    ],
+    "supportedIndirectCommandsShaderStagesPipelineBinding": [
+      "VK_SHADER_STAGE_VERTEX_BIT",
+      "VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT",
+      "VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT",
+      "VK_SHADER_STAGE_GEOMETRY_BIT",
+      "VK_SHADER_STAGE_FRAGMENT_BIT",
+      "VK_SHADER_STAGE_COMPUTE_BIT",
+      "VK_SHADER_STAGE_TASK_BIT_EXT",
+      "VK_SHADER_STAGE_MESH_BIT_EXT"
+    ],
+    "supportedIndirectCommandsShaderStagesShaderBinding": [
+      "VK_SHADER_STAGE_VERTEX_BIT",
+      "VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT",
+      "VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT",
+      "VK_SHADER_STAGE_GEOMETRY_BIT",
+      "VK_SHADER_STAGE_FRAGMENT_BIT",
+      "VK_SHADER_STAGE_COMPUTE_BIT",
+      "VK_SHADER_STAGE_TASK_BIT_EXT",
+      "VK_SHADER_STAGE_MESH_BIT_EXT"
+    ],
+    "deviceGeneratedCommandsTransformFeedback": true,
+    "deviceGeneratedCommandsMultiDrawIndirectCount": true
+  },
+  "limitations": {
+    "memory_heap_sizes_and_budget_snapshot": "NOT_CAPTURED_BY_HW01_V6_PROFILE_JSON",
+    "real_device_creation": "NOT_EXECUTED",
+    "real_allocation_upload_readback": "NOT_EXECUTED",
+    "gpu_timestamps": "CAPABILITY_ONLY_NOT_MEASURED",
+    "performance": "NOT_MEASURED"
+  }
+}

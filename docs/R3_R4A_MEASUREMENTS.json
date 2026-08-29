@@ -1,0 +1,29 @@
+{
+  "environment": {
+    "os": "Linux x86_64 sandbox",
+    "cpu_visible": "AMD EPYC 9V74 80-Core Processor",
+    "visible_cpus": 5,
+    "ram_gib": 5.9,
+    "gcc": "14.2.0",
+    "clang": "17.0.0",
+    "cmake": "3.31.6",
+    "gpu_measured": false
+  },
+  "r3_continuous_queue": {
+    "grant_ms": 0.5,
+    "one_million_dense": [
+      {"dirty_rate": 0.01, "production_frames": 40, "dirty_values": 400000, "drain_slices": 78, "maintenance_cpu_ms": 61.205, "final_backlog": 0, "exact_queries": true},
+      {"dirty_rate": 0.10, "production_frames": 40, "dirty_values": 4000000, "drain_slices": 99, "maintenance_cpu_ms": 73.272, "final_backlog": 0, "exact_queries": true},
+      {"dirty_rate": 0.50, "production_frames": 30, "dirty_values": 15000000, "peak_raw_backlog": 10829760, "drain_slices": 181, "maintenance_cpu_ms": 110.740, "final_backlog": 0, "exact_queries": true}
+    ]
+  },
+  "r4a": {
+    "equivalence_hits": 882,
+    "reference_rays": 200000,
+    "triangle_ms": [17.509, 17.906, 17.330],
+    "sdf_ms": [7.412, 7.674, 7.568],
+    "hits_each": 88840,
+    "triangle_resource_bytes": 240,
+    "sdf_resource_bytes": 52
+  }
+}

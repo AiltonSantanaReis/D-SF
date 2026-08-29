@@ -1,0 +1,131 @@
+{
+  "schema": "dsf.r5e.hw03.closeout.v1",
+  "status": "VERIFIED_HARDWARE_RESULT",
+  "evidence_sha256": "1c4b6c2fb05d04a06d48506c114f2755d630049df24ea2386fed0a47b131d06b",
+  "integrity": {
+    "internal_files_verified": 22,
+    "internal_hash_mismatches": 0
+  },
+  "tool_exit_codes": {
+    "shader_compile": 0,
+    "compile": 0,
+    "link": 0,
+    "probe": 0
+  },
+  "duration_seconds": 3.357,
+  "hardware_result": {
+    "schema": "dsf.r5e.hw03.hardware_result.v1",
+    "status": "PASS",
+    "result_class": "HARDWARE_RESULT",
+    "device_name": "NVIDIA GeForce RTX 3070 Ti",
+    "vendor_id": 4318,
+    "device_id": 9346,
+    "api_version": "1.4.341",
+    "queue_family_index": 2,
+    "launch_mode": "Direct",
+    "binding_model": "descriptor_set_baseline",
+    "operation": "out[i] = in[i] * 3u + 7u",
+    "elements": 1048576,
+    "payload_bytes_per_buffer": 4194304,
+    "local_size_x": 256,
+    "workgroup_count_x": 4096,
+    "input_fnv1a64": "0xac41f8629b52fce0",
+    "expected_fnv1a64": "0x8e2eef1faffc414f",
+    "output_fnv1a64": "0x8e2eef1faffc414f",
+    "cpu_oracle_match": true,
+    "synchronization2_enabled": true,
+    "descriptor_set_count": 1,
+    "storage_buffer_descriptor_count": 2,
+    "push_constant_bytes": 4,
+    "validation_errors": 0,
+    "validation_warnings": 0,
+    "memory_before": {
+      "budget_supported": true,
+      "heaps": [
+        {
+          "index": 0,
+          "size": 8406433792,
+          "flags": 1,
+          "budget": 7601127424,
+          "usage": 0
+        },
+        {
+          "index": 1,
+          "size": 17139396608,
+          "flags": 0,
+          "budget": 16334090240,
+          "usage": 0
+        },
+        {
+          "index": 2,
+          "size": 224395264,
+          "flags": 1,
+          "budget": 208658432,
+          "usage": 15736832
+        }
+      ]
+    },
+    "memory_allocated": {
+      "budget_supported": true,
+      "heaps": [
+        {
+          "index": 0,
+          "size": 8406433792,
+          "flags": 1,
+          "budget": 7601127424,
+          "usage": 11513856
+        },
+        {
+          "index": 1,
+          "size": 17139396608,
+          "flags": 0,
+          "budget": 16334090240,
+          "usage": 20762624
+        },
+        {
+          "index": 2,
+          "size": 224395264,
+          "flags": 1,
+          "budget": 208658432,
+          "usage": 15736832
+        }
+      ]
+    },
+    "memory_after_free": {
+      "budget_supported": true,
+      "heaps": [
+        {
+          "index": 0,
+          "size": 8406433792,
+          "flags": 1,
+          "budget": 7601127424,
+          "usage": 3125248
+        },
+        {
+          "index": 1,
+          "size": 17139396608,
+          "flags": 0,
+          "budget": 16334090240,
+          "usage": 16568320
+        },
+        {
+          "index": 2,
+          "size": 224395264,
+          "flags": 1,
+          "budget": 208658432,
+          "usage": 15736832
+        }
+      ]
+    },
+    "validation_messages": []
+  },
+  "non_claims": [
+    "no GPU performance characterization",
+    "no GPU timestamp measurement",
+    "no Direct vs Indirect performance conclusion",
+    "no DGC execution",
+    "descriptor-set binding is a baseline oracle, not the final binding architecture",
+    "no descriptor-heap execution",
+    "no eviction characterization"
+  ]
+}

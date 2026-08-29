@@ -1,0 +1,17 @@
+{
+  "schema": "dsf.r2_1.immutable_snapshot.v1",
+  "repository": "AiltonSantanaReis/D-SF",
+  "source_commit": "1752239ec15260ee60ca95d23be3b6975b2d82c8",
+  "source_tree": "156fecbf0d7ac498323e6f9c41df807ee2b674a2",
+  "source_commit_message": "test: import verified R2.1 execution patch tests",
+  "main_lineage": "the exact snapshot promoted as the parent of this commit",
+  "canonical_documents": [
+    "README.md",
+    "ARCHITECTURE.md",
+    "PROJECT.md",
+    "RESEARCH_LEDGER.md",
+    "VERIFICATION.md"
+  ],
+  "full_tree_path": "tree/",
+  "preservation": "The files under tree/ are extracted from the exact source commit above."
+}
